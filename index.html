@@ -422,12 +422,12 @@ function badgeHTML(doc){
     const cls = s.days <= 7
       ? 'bg-rose-500 text-white'
       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300';
-    out.push(`<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${cls}"><i class="fa-regular fa-clock mr-1"></i>CÒN ${s.days} NGÀY</span>`);
+    out.push(`<span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${cls}"><i class="fa-regular fa-clock mr-1"></i>CÒN ${s.days} NGÀY</span>`);
   } else {
-    out.push('<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">ĐANG ÁP DỤNG</span>');
+    out.push('<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">ĐANG ÁP DỤNG</span>');
   }
-  if (s.fresh) out.push('<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300">MỚI</span>');
-  if (!s.verified) out.push('<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300" title="Không có link bài gốc để đối chiếu"><i class="fa-solid fa-triangle-exclamation mr-1"></i>CHƯA KIỂM CHỨNG</span>');
+  if (s.fresh) out.push('<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300">MỚI</span>');
+  if (!s.verified) out.push('<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300" title="Không có link bài gốc để đối chiếu"><i class="fa-solid fa-triangle-exclamation mr-1"></i>CHƯA KIỂM CHỨNG</span>');
   return out.join('');
 }
 
@@ -435,35 +435,35 @@ function cardHTML(doc){
   const marked = bookmarks.includes(doc.id);
   const url = safeUrl(doc.link_goc);
   const box = (color, icon, label, text) => `
-    <div class="p-3 rounded-xl bg-${color}-50/70 dark:bg-${color}-950/20 border border-${color}-100 dark:border-${color}-900/30">
-      <div class="font-bold text-${color}-700 dark:text-${color}-300 flex items-center gap-1.5 mb-1 text-[11px]">
+    <div class="p-3.5 rounded-xl bg-${color}-50/70 dark:bg-${color}-950/20 border border-${color}-100 dark:border-${color}-900/30">
+      <div class="font-bold text-${color}-700 dark:text-${color}-300 flex items-center gap-1.5 mb-1.5 text-xs">
         <i class="fa-solid ${icon}"></i><span>${label}</span>
       </div>
-      <p class="text-slate-600 dark:text-slate-400 text-[11px] leading-normal clamp2">${esc(text)}</p>
+      <p class="text-slate-600 dark:text-slate-400 text-[13px] leading-relaxed clamp2">${esc(text)}</p>
     </div>`;
   return `
   <div class="doc-card h-full flex flex-col bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
     <div class="flex items-start justify-between gap-3 mb-3">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        <span class="px-2.5 py-0.5 rounded-full text-[13px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           <i class="fa-solid fa-tag text-[10px] mr-1"></i>${esc(doc.linh_vuc)}
         </span>
         ${badgeHTML(doc)}
-        <span class="text-xs text-slate-500 dark:text-slate-400"><i class="fa-regular fa-calendar text-[11px] mr-1"></i>Hiệu lực: <strong>${esc(fmtVN(doc.ngay_hieu_luc))}</strong></span>
+        <span class="text-[13px] text-slate-500 dark:text-slate-400"><i class="fa-regular fa-calendar text-[11px] mr-1"></i>Hiệu lực: <strong>${esc(fmtVN(doc.ngay_hieu_luc))}</strong></span>
       </div>
       <button onclick="toggleBookmark('${esc(doc.id)}', event)" class="shrink-0 text-slate-400 hover:text-amber-500 transition p-1 no-print" title="Lưu văn bản">
         <i class="${marked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark text-base"></i>
       </button>
     </div>
-    <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition mb-2" onclick="openModal('${esc(doc.id)}')">${esc(doc.tieu_de)}</h3>
-    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">${esc(doc.tom_tat)}</p>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4 text-xs">
+    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition mb-2" onclick="openModal('${esc(doc.id)}')">${esc(doc.tieu_de)}</h3>
+    <p class="text-sm sm:text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed mb-4">${esc(doc.tom_tat)}</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4 text-[13px]">
       ${box('sky','fa-compass','P — PLAN (Phạm vi &amp; Đối tượng)', doc.pdca_plan)}
       ${box('emerald','fa-list-check','D — DO (Yêu cầu thực thi)', doc.pdca_do)}
       ${box('amber','fa-shield-halved','C — CHECK (Kiểm tra &amp; Rủi ro)', doc.pdca_check)}
       ${box('purple','fa-screwdriver-wrench','A — ACT (Khuyến nghị cải tiến)', doc.pdca_act)}
     </div>
-    <div class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+    <div class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-[13px]">
       <div class="text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2">
         <span>Số hiệu: <strong>${esc(doc.so_hieu)}</strong></span><span>•</span><span>${esc(doc.co_quan)}</span>
       </div>
@@ -541,17 +541,17 @@ function openModal(id){
   const s = docState(doc);
   const pillar = (color, letter, title, text) => `
     <div class="p-4 rounded-xl bg-${color}-50/80 dark:bg-${color}-950/30 border border-${color}-200 dark:border-${color}-900/40">
-      <div class="text-xs font-bold text-${color}-800 dark:text-${color}-300 flex items-center gap-2 mb-1.5">
+      <div class="text-[13px] font-bold text-${color}-800 dark:text-${color}-300 flex items-center gap-2 mb-1.5">
         <span class="w-5 h-5 rounded-md bg-${color}-600 text-white flex items-center justify-center text-[10px]">${letter}</span><span>${title}</span>
       </div>
-      <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${esc(text)}</p>
+      <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${esc(text)}</p>
     </div>`;
 
   document.getElementById('modalBody').innerHTML = `
     ${!s.verified ? `<div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-800 dark:text-rose-200">
       <i class="fa-solid fa-triangle-exclamation mr-1.5"></i><strong>Chưa kiểm chứng:</strong> mục này không có link tới bài gốc trên cổng DNIEZA. Hãy đối chiếu số hiệu và ngày hiệu lực với công báo trước khi đưa vào hồ sơ tuân thủ.
     </div>` : ''}
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-[13px]">
       <div><span class="text-slate-500 dark:text-slate-400 block">Số hiệu:</span><strong>${esc(doc.so_hieu)}</strong></div>
       <div><span class="text-slate-500 dark:text-slate-400 block">Cơ quan ban hành:</span><strong>${esc(doc.co_quan)}</strong></div>
       <div><span class="text-slate-500 dark:text-slate-400 block">Ngày có hiệu lực:</span><strong class="text-emerald-600 dark:text-emerald-400">${esc(fmtVN(doc.ngay_hieu_luc))}</strong>
@@ -559,7 +559,7 @@ function openModal(id){
     </div>
     <div>
       <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Tóm tắt nội dung trọng yếu</h4>
-      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">${esc(doc.tom_tat)}</p>
+      <p class="text-sm sm:text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">${esc(doc.tom_tat)}</p>
     </div>
     <div class="space-y-3 pt-1">
       ${pillar('sky','P','PLAN — PHẠM VI &amp; ĐỐI TƯỢNG ÁP DỤNG', doc.pdca_plan)}
