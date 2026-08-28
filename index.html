@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNIEZA Legal &amp; HSE Portal — Triển khai Văn bản pháp luật mới</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } } };
+</script>
+<style>
+  .glass { background: rgba(255,255,255,.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .dark .glass { background: rgba(15,23,42,.85); }
+  .custom-scrollbar::-webkit-scrollbar { width:6px; height:6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:9999px; }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background:#334155; }
+  .clamp2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .doc-card { break-inside: avoid; page-break-inside: avoid; border:1px solid #ccc !important; box-shadow:none !important; margin-bottom:10px; }
+    .clamp2 { -webkit-line-clamp: unset; overflow: visible; display: block; }
+  }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen font-sans custom-scrollbar">
+
+<header class="sticky top-0 z-40 glass border-b border-slate-200 dark:border-slate-800 no-print">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center space-x-3 min-w-0">
+        <div class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md">
+          <i class="fa-solid fa-scale-balanced text-lg"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate">DNIEZA Legal &amp; HSE Portal</h1>
+            <span id="syncBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span><span id="syncBadgeText">Đang tải…</span>
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 truncate">Nguồn: Triển khai Văn bản pháp luật mới — Ban Quản lý các KCN Đồng Nai</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 shrink-0">
+        <button onclick="fetchSheetData()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition" title="Đồng bộ lại từ Google Sheet">
+          <i class="fa-solid fa-arrows-rotate text-emerald-600 dark:text-emerald-400" id="refreshIcon"></i>
+          <span class="hidden sm:inline">Đồng bộ</span>
+        </button>
+        <a id="sheetLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition">
+          <i class="fa-solid fa-table-cells"></i><span>Sheet</span>
+        </a>
+        <button onclick="toggleTheme()" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition" title="Sáng / Tối">
+          <i class="fa-solid fa-moon text-sm dark:hidden"></i><i class="fa-solid fa-sun text-sm hidden dark:inline text-amber-400"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+  <div id="alertZone" class="space-y-3 mb-5"></div>
+
+  <div class="mb-6 bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden border border-emerald-900/40">
+    <div class="absolute right-0 top-0 -mt-10 -mr-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+      <div class="max-w-2xl">
+        <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium mb-2 border border-emerald-500/30">
+          <i class="fa-solid fa-bolt text-xs"></i><span>Theo dõi tuân thủ theo chu trình PDCA</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Hệ Thống Theo Dõi Văn Bản Pháp Luật &amp; Chỉ Đạo</h2>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1.5">
+          Bóc tách văn bản quy phạm pháp luật theo chuẩn <strong>PDCA</strong> (Plan – Do – Check – Act) phục vụ vận hành doanh nghiệp &amp; HSE trong khu công nghiệp.
+        </p>
+      </div>
+      <div class="grid grid-cols-3 gap-2 shrink-0">
+        <div class="px-3 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-center">
+          <div id="statTotal" class="text-xl font-extrabold text-white">0</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Văn bản</div>
+        </div>
+        <div class="px-3 py-2.5 rounded-xl bg-amber-900/40 border border-amber-700/50 text-center">
+          <div id="statUpcoming" class="text-xl font-extrabold text-amber-300">0</div>
+          <div class="text-[10px] text-amber-200/80 mt-0.5">Sắp hiệu lực</div>
+        </div>
+        <div class="px-3 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-center">
+          <div id="statData" class="text-xl font-extrabold text-emerald-400">—</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Dữ liệu mới nhất</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="deadlinePanel" class="hidden mb-6"></div>
+
+  <div class="mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 no-print">
+    <div class="md:col-span-6 relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-sm"></i></div>
+      <input type="text" id="searchInput" oninput="rerender()" placeholder="Tìm theo số hiệu, tên văn bản, nội dung PDCA…" class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+    </div>
+    <div class="md:col-span-4 relative">
+      <select id="categoryFilter" onchange="rerender()" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm appearance-none cursor-pointer">
+        <option value="ALL">Tất cả lĩnh vực</option>
+      </select>
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+    </div>
+    <div class="md:col-span-2">
+      <button onclick="window.print()" class="w-full py-2.5 px-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium transition flex items-center justify-center space-x-1.5 shadow-sm">
+        <i class="fa-solid fa-print text-slate-500"></i><span>In / PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mb-6 flex flex-wrap items-center gap-2 no-print">
+    <button data-chip="upcoming" onclick="toggleChip('upcoming')" class="chip px-3 py-1.5 rounded-lg text-xs font-medium border transition bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+      <i class="fa-regular fa-clock text-amber-500 mr-1"></i>Sắp có hiệu lực <span id="cntUpcoming" class="ml-1 font-bold">0</span>
+    </button>
+    <button data-chip="bookmark" onclick="toggleChip('bookmark')" class="chip px-3 py-1.5 rounded-lg text-xs font-medium border transition bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+      <i class="fa-solid fa-bookmark text-amber-500 mr-1"></i>Đã lưu <span id="cntBookmark" class="ml-1 font-bold">0</span>
+    </button>
+    <button data-chip="unverified" onclick="toggleChip('unverified')" class="chip px-3 py-1.5 rounded-lg text-xs font-medium border transition bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+      <i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1"></i>Chưa kiểm chứng <span id="cntUnverified" class="ml-1 font-bold">0</span>
+    </button>
+    <span id="filterSummary" class="text-xs text-slate-500 dark:text-slate-400 ml-1"></span>
+  </div>
+
+  <div id="documentsFeed" class="space-y-4"></div>
+
+  <div id="emptyState" class="hidden text-center py-12">
+    <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-2xl"><i class="fa-solid fa-folder-open"></i></div>
+    <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Không tìm thấy văn bản phù hợp</h4>
+    <p class="text-xs text-slate-500 mt-1">Thử đổi từ khóa hoặc bỏ bớt bộ lọc.</p>
+  </div>
+
+  <div class="mt-6 text-center no-print">
+    <button id="loadMoreBtn" onclick="loadMore()" class="hidden px-5 py-2.5 rounded-xl text-sm font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
+      Xem thêm <span id="loadMoreCount" class="text-slate-500"></span>
+    </button>
+  </div>
+
+  <footer class="mt-10 pt-5 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+    <p>Nội dung PDCA được tổng hợp tự động, mang tính tham khảo cho công tác chuẩn bị tuân thủ. <strong>Luôn đối chiếu văn bản gốc trước khi ra quyết định</strong> — theo khuyến cáo của Bộ KH&amp;CN về sử dụng AI rà soát văn bản pháp luật.</p>
+    <p>Nguồn: <a id="footerSource" href="#" target="_blank" rel="noopener noreferrer" class="text-emerald-600 dark:text-emerald-400 hover:underline">Chuyên mục "Triển khai Văn bản pháp luật mới" — dnieza.dongnai.gov.vn</a></p>
+  </footer>
+</main>
+
+<div id="docModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 no-print" onclick="if(event.target===this)closeModal()">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800 custom-scrollbar">
+    <div class="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between z-10">
+      <div class="pr-3">
+        <div id="modalChips" class="flex flex-wrap gap-1.5 mb-1.5"></div>
+        <h3 id="modalTitle" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug"></h3>
+      </div>
+      <button onclick="closeModal()" class="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div class="p-6 space-y-4" id="modalBody"></div>
+    <div class="p-4 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center gap-3">
+      <a id="modalSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
+        <span>Xem bài gốc trên cổng DNIEZA</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+      </a>
+      <button onclick="closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl transition">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================ CẤU HÌNH ============================ */
+const SHEET_ID   = "1PVid8IX8djnxoa4LEUBGve9rDz3p3DCP8oSbPcwM78A";
+// Không ghim gid: luôn lấy trang tính đầu tiên, nên thao tác Import/đổi tên tab không làm hỏng app
+const SHEET_CSV  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+const SHEET_EDIT = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+const SOURCE_URL = "https://dnieza.dongnai.gov.vn/Pages/news.aspx?CatId=104";
+const SEED_DATE  = "28/08/2026";
+const PAGE_SIZE  = 12;
+const STALE_DAYS = 3;
+
+const SEED_DATA = [{"id":"DNIEZA-5087","ngay_cap_nhat":"2026-08-28","tieu_de":"Thông tư số 45/2026/TT-BKHCN ngày 31/7/2026 sửa đổi, bổ sung thủ tục hành chính lĩnh vực đo lường","so_hieu":"45/2026/TT-BKHCN","co_quan":"Bộ Khoa học và Công nghệ","ngay_hieu_luc":"2026-09-15","linh_vuc":"Tiêu chuẩn & Chất lượng","tom_tat":"Cắt giảm và đơn giản hóa thủ tục hành chính trong hoạt động kiểm định, hiệu chuẩn, thử nghiệm phương tiện đo; tiếp nhận trực tuyến qua Cổng Dịch vụ công Quốc gia.","pdca_plan":"Áp dụng cho tổ chức, doanh nghiệp sử dụng phương tiện đo nhóm 2, thiết bị quan trắc, kiểm nghiệm chất lượng và đo lường trong sản xuất.","pdca_do":"Rà soát danh mục phương tiện đo của nhà máy; chuyển sang nộp hồ sơ công bố và đăng ký trực tuyến qua Cổng Dịch vụ công quốc gia theo biểu mẫu mới.","pdca_check":"Kiểm tra định kỳ tem kiểm định và chứng nhận hiệu chuẩn của thiết bị đo lường; đối chiếu với quy trình tiếp nhận mới của cơ quan chức năng.","pdca_act":"Cập nhật quy trình hiệu chuẩn kiểm định nội bộ, phân loại thiết bị đo nhóm 1 và nhóm 2, hoàn thiện hồ sơ điện tử trước ngày có hiệu lực 15/9/2026.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5087&CatId=105","trang_thai":"Sắp có hiệu lực"},{"id":"DNIEZA-5088","ngay_cap_nhat":"2026-08-27","tieu_de":"Quyết định số 2292/QĐ-UBND của UBND tỉnh Đồng Nai về việc cập nhật kịch bản tăng trưởng 6 tháng cuối năm 2026","so_hieu":"2292/QĐ-UBND","co_quan":"UBND tỉnh Đồng Nai","ngay_hieu_luc":"2026-08-22","linh_vuc":"Đầu tư & Vận hành KCN","tom_tat":"Xác định mục tiêu tăng trưởng GRDP cả năm 11%, trong đó ngành công nghiệp chế biến chế tạo tăng 12,98%; tập trung tháo gỡ khó khăn cho doanh nghiệp trong KCN.","pdca_plan":"Áp dụng cho doanh nghiệp sản xuất, chế biến chế tạo và các chủ đầu tư hạ tầng trong các KCN trên địa bàn tỉnh Đồng Nai.","pdca_do":"Đẩy mạnh kế hoạch sản xuất kinh doanh quý III và quý IV; chủ động đăng ký nhu cầu hỗ trợ về thủ tục hải quan, logistics, nguồn điện và tuyển dụng lao động.","pdca_check":"Theo dõi chỉ số sản lượng, doanh thu, xuất nhập khẩu và báo cáo định kỳ tình hình hoạt động cho Ban Quản lý KCN Đồng Nai.","pdca_act":"Tối ưu hóa chuỗi cung ứng, nâng cao năng suất chuyền sản xuất, áp dụng chuyển đổi số và giải pháp tiết kiệm năng lượng.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5088&CatId=102","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-ND286-2026","ngay_cap_nhat":"2026-08-27","tieu_de":"Nghị định số 286/2026/NĐ-CP quy định cơ chế phối hợp giữa các bộ, cơ quan ngang bộ, UBND tỉnh trong công tác quản lý nhập cảnh, xuất cảnh, quá cảnh, cư trú của người nước ngoài tại Việt Nam","so_hieu":"286/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-09-15","linh_vuc":"Hành chính & Pháp lý doanh nghiệp","tom_tat":"Quy định cơ chế phối hợp liên ngành trong quản lý nhập cảnh, xuất cảnh, quá cảnh và cư trú của người nước ngoài tại Việt Nam, thay thế Nghị định 64/2015/NĐ-CP. LƯU Ý: đây KHÔNG phải văn bản về giấy phép lao động; việc cấp giấy phép lao động và giải trình nhu cầu sử dụng người lao động nước ngoài do Nghị định 219/2025/NĐ-CP điều chỉnh.","pdca_plan":"Áp dụng cho các bộ, cơ quan ngang bộ và UBND cấp tỉnh. Doanh nghiệp chịu tác động gián tiếp thông qua thủ tục khai báo tạm trú và quản lý cư trú đối với chuyên gia nước ngoài.","pdca_do":"Rà soát quy trình khai báo tạm trú cho chuyên gia nước ngoài; xác định đầu mối cơ quan tiếp nhận sau khi cơ chế phối hợp mới có hiệu lực.","pdca_check":"KIỂM CHỨNG LẠI trước khi sử dụng: chưa xác định được bài đăng gốc trên cổng DNIEZA cho văn bản này, cần đối chiếu số hiệu và ngày hiệu lực với công báo trước khi đưa vào hồ sơ tuân thủ.","pdca_act":"Tách bạch hai nhóm hồ sơ trong quy trình nội bộ: hồ sơ cư trú và xuất nhập cảnh theo Nghị định 286/2026, hồ sơ giấy phép lao động theo Nghị định 219/2025.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/news.aspx?CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-ND310-2026","ngay_cap_nhat":"2026-08-26","tieu_de":"Nghị định số 310/2026/NĐ-CP sửa đổi, bổ sung một số điều của Nghị định 45/2020/NĐ-CP về thực hiện thủ tục hành chính trên môi trường điện tử","so_hieu":"310/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-08-05","linh_vuc":"Hành chính & Pháp lý doanh nghiệp","tom_tat":"Chuẩn hóa quy trình tiếp nhận và giải quyết thủ tục hành chính trực tuyến; xác lập tài khoản giao dịch điện tử, kiểm tra kỹ thuật tự động hồ sơ và công nhận hồ sơ điện tử toàn trình. Ban hành và có hiệu lực từ 05/8/2026.","pdca_plan":"Áp dụng cho tổ chức, doanh nghiệp thực hiện giao dịch hành chính công với Ban Quản lý KCN và các cơ quan nhà nước.","pdca_do":"Thiết lập tài khoản giao dịch điện tử; sử dụng chữ ký số cho các vị trí có thẩm quyền; nộp và nhận kết quả hồ sơ môi trường, đầu tư, xây dựng qua môi trường mạng.","pdca_check":"Kiểm tra tính toàn vẹn và giá trị pháp lý của chứng từ điện tử nhận từ cổng dịch vụ công. Lưu ý: chưa xác định được bài đăng gốc trên cổng DNIEZA cho văn bản này.","pdca_act":"Đào tạo nhân sự hành chính, pháp chế và HSE sử dụng cổng dịch vụ công trực tuyến; loại bỏ việc in ấn hồ sơ giấy không cần thiết.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/news.aspx?CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-4926","ngay_cap_nhat":"2026-08-26","tieu_de":"Nghị định số 110/2026/NĐ-CP của Chính phủ quy định trách nhiệm tái chế sản phẩm, bao bì và xử lý chất thải (EPR)","so_hieu":"110/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-04-01","linh_vuc":"Môi trường","tom_tat":"Quy định chi tiết trách nhiệm tái chế mở rộng (EPR) cho nhà sản xuất và nhập khẩu bao bì thương phẩm; hạn nộp báo cáo trước 01/4 và đóng góp tài chính trước 20/4 hằng năm.","pdca_plan":"Áp dụng cho nhà sản xuất, nhập khẩu sản phẩm và bao bì thương phẩm có doanh thu từ 30 tỷ đồng một năm trở lên.","pdca_do":"Chọn một trong hai hình thức: tự tổ chức tái chế hoặc thuê đơn vị được cấp phép, hoặc đóng góp tài chính vào Quỹ Bảo vệ Môi trường Việt Nam; đăng ký và kê khai trên Hệ thống EPR quốc gia.","pdca_check":"Giám sát qua cổng EPR quốc gia; kiểm tra tính hợp lệ của khối lượng bao bì đưa ra thị trường; xử lý vi phạm nếu né tránh trách nhiệm tài chính.","pdca_act":"Tính toán khối lượng bao bì thương phẩm phát sinh trong năm; lập dự toán chi phí đóng góp quỹ hoặc liên kết đơn vị tái chế; đăng ký tài khoản trên cổng thông tin EPR.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=4926&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-4934","ngay_cap_nhat":"2026-08-25","tieu_de":"Thông tư số 13/2026/TT-BKHCN quy định chi tiết về xây dựng, thẩm định và áp dụng tiêu chuẩn","so_hieu":"13/2026/TT-BKHCN","co_quan":"Bộ Khoa học và Công nghệ","ngay_hieu_luc":"2026-05-24","linh_vuc":"Tiêu chuẩn & Chất lượng","tom_tat":"Quy định chi tiết về xây dựng, thẩm định và áp dụng tiêu chuẩn quốc gia (TCVN) và tiêu chuẩn cơ sở (TCCS); rút ngắn quy trình lấy ý kiến trong trường hợp cấp thiết còn 10 ngày.","pdca_plan":"Áp dụng cho tổ chức, doanh nghiệp sản xuất kinh doanh xây dựng và công bố tiêu chuẩn cơ sở, áp dụng tiêu chuẩn quốc gia và tiêu chuẩn quốc tế.","pdca_do":"Xây dựng và tự công bố TCCS thông qua Cơ sở dữ liệu quốc gia về tiêu chuẩn, đo lường, chất lượng; rà soát đối chiếu quy chuẩn kỹ thuật tương ứng.","pdca_check":"Rà soát, đánh giá hiệu quả áp dụng tiêu chuẩn định kỳ 03 năm một lần; kiểm soát sự phù hợp của sản phẩm xuất xưởng so với tiêu chuẩn đã công bố.","pdca_act":"Chuẩn hóa hệ thống tiêu chuẩn kỹ thuật nội bộ; chủ động áp dụng tiêu chuẩn quốc tế (IEC, ASTM, ISO); cập nhật hồ sơ công bố TCCS trên hệ thống quốc gia.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=4934&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-4905","ngay_cap_nhat":"2026-08-25","tieu_de":"Nghị định số 96/2026/NĐ-CP của Chính phủ hướng dẫn thi hành một số điều của Luật Đầu tư năm 2025","so_hieu":"96/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-06-01","linh_vuc":"Đầu tư & Vận hành KCN","tom_tat":"Quy định chi tiết và hướng dẫn thi hành Luật Đầu tư; hướng dẫn điều kiện tiếp cận thị trường, thủ tục điều chỉnh dự án và ưu đãi cho công nghệ cao, khu công nghiệp sinh thái.","pdca_plan":"Áp dụng cho nhà đầu tư, doanh nghiệp thứ cấp và ban quản lý hạ tầng khu công nghiệp, khu kinh tế, khu công nghệ cao.","pdca_do":"Chuẩn hóa hồ sơ dự án đầu tư dạng điện tử; thực hiện thủ tục đăng ký, điều chỉnh chủ trương đầu tư và cấp Giấy chứng nhận đăng ký đầu tư theo biểu mẫu mới.","pdca_check":"Kiểm tra điều kiện tiếp cận thị trường và danh mục ngành nghề ưu đãi đầu tư; đảm bảo tiến độ triển khai dự án và chế độ báo cáo giám sát đầu tư định kỳ.","pdca_act":"Rà soát các gói ưu đãi đầu tư về công nghệ xanh và bảo vệ môi trường trong KCN; số hóa hồ sơ pháp lý dự án; cập nhật thông tin trên Hệ thống thông tin quốc gia về đầu tư.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=4905&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5086","ngay_cap_nhat":"2026-08-24","tieu_de":"Quyết định số 42/2026/QĐ-TTg ngày 10/8/2026 của Thủ tướng Chính phủ ban hành Danh mục lĩnh vực, cơ sở phát thải khí nhà kính phải thực hiện kiểm kê khí nhà kính (cập nhật)","so_hieu":"42/2026/QĐ-TTg","co_quan":"Thủ tướng Chính phủ","ngay_hieu_luc":"2026-09-25","linh_vuc":"Môi trường","tom_tat":"Cập nhật danh mục 2.441 cơ sở phát thải khí nhà kính trọng điểm phải thực hiện kiểm kê định kỳ 02 năm một lần, áp dụng từ 25/9/2026.","pdca_plan":"Áp dụng cho 2.441 cơ sở phát thải khí nhà kính từ 3.000 tấn CO2e/năm hoặc tiêu thụ năng lượng từ 1.000 TOE/năm trở lên, thuộc 6 lĩnh vực chính gồm năng lượng, giao thông vận tải, xây dựng, công nghiệp và các lĩnh vực liên quan.","pdca_do":"Thiết lập hệ thống MRV nội bộ, thu thập hóa đơn năng lượng, đo đạc dữ liệu Scope 1 và Scope 2, lập báo cáo kiểm kê khí nhà kính cấp cơ sở định kỳ 02 năm một lần và xây dựng kế hoạch giảm phát thải giai đoạn 2026-2030.","pdca_check":"Báo cáo kiểm kê phải được thẩm định độc lập bởi tổ chức được cấp phép; chịu thanh tra, giám sát từ cơ quan quản lý môi trường và Ban Quản lý KCN; rủi ro xử phạt vi phạm hành chính nếu không nộp báo cáo đúng hạn.","pdca_act":"Rà soát xem nhà máy có tên trong phụ lục Quyết định 42 hay không; tích hợp ISO 50001 và ISO 14064-1 vào quy trình vận hành; đào tạo đội ngũ kỹ thuật và HSE; lên phương án đầu tư thiết bị tiết kiệm năng lượng.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5086&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5011","ngay_cap_nhat":"2026-08-24","tieu_de":"Văn bản hợp nhất số 55/VBHN-BNNMT quy định chi tiết thi hành một số điều của Luật Bảo vệ môi trường","so_hieu":"55/VBHN-BNNMT","co_quan":"Bộ Nông nghiệp và Môi trường","ngay_hieu_luc":"2026-06-19","linh_vuc":"Môi trường","tom_tat":"Hợp nhất các quy định về giấy phép môi trường, đánh giá tác động môi trường, quản lý nước thải, khí thải và hệ thống quan trắc tự động liên tục.","pdca_plan":"Áp dụng cho toàn bộ cơ sở sản xuất, nhà máy đang vận hành trong các KCN Đồng Nai.","pdca_do":"Vận hành đúng các công trình xử lý chất thải theo cam kết trong giấy phép môi trường; duy trì kiểm định và truyền dữ liệu quan trắc tự động liên tục về cơ quan quản lý.","pdca_check":"Thực hiện quan trắc môi trường định kỳ; lưu nhật ký vận hành hệ thống xử lý khí thải và nước thải; lưu chứng từ chuyển giao chất thải nguy hại.","pdca_act":"Rà soát thời hạn và nội dung giấy phép môi trường hiện hành; kịp thời lập hồ sơ cấp đổi hoặc điều chỉnh nếu thay đổi công suất hoặc công nghệ.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5011&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-4890","ngay_cap_nhat":"2026-08-24","tieu_de":"Quyết định số 779/QĐ-UBND phê duyệt điều chỉnh Quy hoạch tỉnh Đồng Nai thời kỳ 2021-2030, tầm nhìn đến năm 2050","so_hieu":"779/QĐ-UBND","co_quan":"UBND tỉnh Đồng Nai","ngay_hieu_luc":"2026-04-01","linh_vuc":"Đất đai & Xây dựng","tom_tat":"Phê duyệt quy hoạch 89 khu công nghiệp gắn với sân bay quốc tế Long Thành và cao tốc Biên Hòa - Vũng Tàu; ưu tiên phát triển mô hình KCN sinh thái và công nghệ cao.","pdca_plan":"Áp dụng cho doanh nghiệp đang hoạt động trong KCN Đồng Nai và các dự án mở rộng, di dời hoặc xây mới nhà máy.","pdca_do":"Căn cứ định hướng phân khu chức năng để xây dựng kế hoạch mở rộng mặt bằng sản xuất và kết nối hạ tầng giao thông, logistics sân bay và cảng biển.","pdca_check":"Kiểm tra quy chuẩn xây dựng, mật độ cây xanh, hệ số sử dụng đất và chỉ tiêu môi trường của nhà máy theo tiêu chuẩn KCN sinh thái.","pdca_act":"Nghiên cứu lộ trình chuyển đổi nhà máy sang mô hình nhà máy xanh và Net Zero để đón đầu chính sách ưu đãi thuế và đất đai của tỉnh.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=4890&CatId=108","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5073","ngay_cap_nhat":"2026-08-13","tieu_de":"Bộ Khoa học và Công nghệ khuyến nghị ưu tiên 2 nền tảng AI hỗ trợ rà soát văn bản pháp luật trên toàn quốc","so_hieu":"6044/BKHCN-CNCNTT","co_quan":"Bộ Khoa học và Công nghệ","ngay_hieu_luc":"2026-08-13","linh_vuc":"Hành chính & Pháp lý doanh nghiệp","tom_tat":"Bộ KH&CN khuyến nghị ưu tiên hai nền tảng AI Luật (MISA và Truyền thông Pháp luật Việt Nam) và Clex (Tập đoàn Công nghệ CMC) để tra cứu, hệ thống hóa và xác định tình trạng hiệu lực của văn bản. Bộ nhấn mạnh AI chỉ là công cụ hỗ trợ, người thực hiện phải kiểm chứng lại toàn bộ kết quả do AI tạo ra.","pdca_plan":"Áp dụng cho cơ quan nhà nước thực hiện rà soát hệ thống văn bản; doanh nghiệp có thể tham khảo phục vụ công tác pháp chế nội bộ.","pdca_do":"Tham khảo hai nền tảng trên khi cần tra cứu tình trạng hiệu lực văn bản, phát hiện mâu thuẫn, chồng chéo giữa các quy định.","pdca_check":"Đối chiếu kết quả tra cứu bằng AI với văn bản gốc trước khi sử dụng cho mục đích tuân thủ, đây là khuyến cáo chính thức của Bộ KH&CN.","pdca_act":"Áp dụng nguyên tắc kiểm chứng bắt buộc đối với mọi kết quả do AI sinh ra trong quy trình pháp chế và HSE của doanh nghiệp.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5073&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5061-1","ngay_cap_nhat":"2026-08-11","tieu_de":"Nghị định số 281/2026/NĐ-CP sửa đổi, bổ sung quy định về xử phạt vi phạm hành chính trong lĩnh vực đất đai","so_hieu":"281/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-08-31","linh_vuc":"Đất đai & Xây dựng","tom_tat":"Sửa đổi, bổ sung các quy định xử phạt vi phạm hành chính trong lĩnh vực đất đai, ban hành ngày 13/7/2026 và có hiệu lực từ 31/8/2026.","pdca_plan":"Áp dụng cho tổ chức, doanh nghiệp sử dụng đất, bao gồm doanh nghiệp thuê lại đất trong khu công nghiệp.","pdca_do":"Rà soát hiện trạng sử dụng đất so với hợp đồng thuê lại và giấy chứng nhận: mục đích sử dụng, ranh giới, diện tích xây dựng, các hạng mục cơi nới hoặc thay đổi công năng chưa cập nhật hồ sơ.","pdca_check":"Đối chiếu các hành vi bị xử phạt được sửa đổi với thực tế nhà máy; xác định các điểm có nguy cơ bị lập biên bản khi thanh tra đất đai.","pdca_act":"Ưu tiên xử lý trước ngày 31/8/2026 các sai lệch có thể tự khắc phục; với hạng mục cần điều chỉnh hồ sơ thì lập kế hoạch làm việc với chủ đầu tư hạ tầng KCN.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5061&CatId=104","trang_thai":"Sắp có hiệu lực"},{"id":"DNIEZA-5061-2","ngay_cap_nhat":"2026-08-11","tieu_de":"Nghị định số 274/2026/NĐ-CP quy định chi tiết Luật Đấu thầu về lựa chọn nhà đầu tư","so_hieu":"274/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-08-21","linh_vuc":"Đầu tư & Vận hành KCN","tom_tat":"Quy định chi tiết Luật Đấu thầu về trình tự, thủ tục lựa chọn nhà đầu tư thực hiện dự án, ban hành ngày 07/7/2026 và có hiệu lực từ 21/8/2026.","pdca_plan":"Áp dụng cho nhà đầu tư tham gia các dự án có sử dụng đất và dự án hạ tầng khu công nghiệp phải tổ chức lựa chọn nhà đầu tư.","pdca_do":"Rà soát điều kiện năng lực và hồ sơ dự thầu theo biểu mẫu mới nếu doanh nghiệp có kế hoạch tham gia dự án mở rộng hạ tầng hoặc dự án có sử dụng đất.","pdca_check":"Theo dõi thông tin mời thầu và điều kiện tiếp cận; kiểm tra tính hợp lệ và thời hạn của hồ sơ năng lực trước khi nộp.","pdca_act":"Chuẩn hóa bộ hồ sơ năng lực nhà đầu tư dạng điện tử để sẵn sàng tham gia các đợt lựa chọn nhà đầu tư sắp tới.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5061&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5061-3","ngay_cap_nhat":"2026-08-11","tieu_de":"Quyết định số 32/2026/QĐ-TTg ban hành Hệ thống ngành sản phẩm Việt Nam","so_hieu":"32/2026/QĐ-TTg","co_quan":"Thủ tướng Chính phủ","ngay_hieu_luc":"2026-08-14","linh_vuc":"Tiêu chuẩn & Chất lượng","tom_tat":"Ban hành Hệ thống ngành sản phẩm Việt Nam làm chuẩn phân loại sản phẩm phục vụ thống kê, khai báo và quản lý nhà nước; ban hành ngày 29/6/2026, hiệu lực từ 14/8/2026.","pdca_plan":"Áp dụng cho doanh nghiệp sản xuất khi khai báo mã ngành sản phẩm trong hồ sơ đăng ký, báo cáo thống kê và các thủ tục hành chính.","pdca_do":"Đối chiếu danh mục sản phẩm đang sản xuất với mã ngành sản phẩm mới; cập nhật mã trong các biểu mẫu khai báo và báo cáo định kỳ.","pdca_check":"Kiểm tra tính nhất quán của mã ngành sản phẩm giữa giấy chứng nhận đăng ký đầu tư, đăng ký doanh nghiệp và các báo cáo thống kê.","pdca_act":"Cập nhật bảng ánh xạ mã sản phẩm nội bộ để tránh sai lệch khi khai báo với cơ quan thống kê và hải quan.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5061&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5061-4","ngay_cap_nhat":"2026-08-11","tieu_de":"Nghị định số 273/2026/NĐ-CP quy định về kinh doanh hàng miễn thuế","so_hieu":"273/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-08-21","linh_vuc":"Đầu tư & Vận hành KCN","tom_tat":"Quy định về hoạt động kinh doanh hàng miễn thuế, ban hành ngày 07/7/2026 và có hiệu lực từ 21/8/2026.","pdca_plan":"Áp dụng cho doanh nghiệp kinh doanh hàng miễn thuế và các đơn vị có hoạt động liên quan đến kho hàng miễn thuế.","pdca_do":"Rà soát nếu doanh nghiệp có hoạt động liên quan đến hàng miễn thuế hoặc kho ngoại quan; cập nhật thủ tục theo quy định mới.","pdca_check":"Kiểm tra tính tuân thủ của hồ sơ hải quan liên quan đến hàng miễn thuế.","pdca_act":"Mức độ liên quan thấp với nhà máy sản xuất thông thường, lưu hồ sơ để tham chiếu khi cần.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5061&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5057","ngay_cap_nhat":"2026-08-06","tieu_de":"Nghị định số 293/2026/NĐ-CP hướng dẫn thực thi Công ước La Hay về miễn hợp pháp hóa đối với giấy tờ công của nước ngoài (Apostille)","so_hieu":"293/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-09-11","linh_vuc":"Hành chính & Pháp lý doanh nghiệp","tom_tat":"Thiết lập cơ chế cấp Chứng nhận Apostille thay cho hợp pháp hóa lãnh sự truyền thống; xác nhận chữ ký, chức danh, thẩm quyền người ký và con dấu trên giấy tờ công, không xác nhận nội dung tài liệu.","pdca_plan":"Áp dụng cho tổ chức, cá nhân cần chứng nhận giấy tờ công của Việt Nam để sử dụng ở nước ngoài và ngược lại; liên quan trực tiếp đến doanh nghiệp FDI sử dụng chuyên gia nước ngoài và tài liệu từ công ty mẹ.","pdca_do":"Xác định các loại giấy tờ đang phải hợp pháp hóa lãnh sự như bằng cấp, lý lịch tư pháp, giấy tờ pháp nhân có thể chuyển sang Apostille; nộp hồ sơ trực tiếp tại trung tâm phục vụ hành chính công, qua bưu chính hoặc trực tuyến toàn trình qua Cổng dịch vụ công quốc gia.","pdca_check":"Bộ Ngoại giao xác định cơ quan thực hiện và có thể phân cấp cho địa phương, cần xác nhận đầu mối áp dụng tại Đồng Nai trước khi nộp. Người yêu cầu chứng nhận giấy tờ của người khác chịu trách nhiệm pháp lý về đề nghị của mình.","pdca_act":"Cập nhật quy trình nội bộ về hồ sơ chuyên gia nước ngoài trước ngày 11/9/2026 để rút ngắn thời gian và chi phí so với hợp pháp hóa lãnh sự trước đây.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5057&CatId=104","trang_thai":"Sắp có hiệu lực"},{"id":"DNIEZA-5031","ngay_cap_nhat":"2026-07-16","tieu_de":"Quyết định số 58/2026/QĐ-UBND về lộ trình thực hiện phân loại chất thải rắn sinh hoạt tại nguồn trên địa bàn thành phố Đồng Nai","so_hieu":"58/2026/QĐ-UBND","co_quan":"UBND thành phố Đồng Nai","ngay_hieu_luc":"2026-07-26","linh_vuc":"Môi trường","tom_tat":"Bắt buộc phân loại chất thải rắn sinh hoạt tại nguồn: nhóm tái sử dụng, tái chế từ 01/01/2027 và nhóm nguy hại hộ gia đình từ 01/01/2028; địa phương hoàn tất điều kiện triển khai trước 31/12/2026.","pdca_plan":"Áp dụng cho cơ quan, tổ chức, hộ gia đình, cá nhân trong và ngoài nước có phát sinh, thu gom, vận chuyển, xử lý chất thải rắn sinh hoạt trên địa bàn thành phố Đồng Nai, bao gồm nhà máy trong KCN và khu lưu trú công nhân.","pdca_do":"Bố trí thùng và khu vực phân loại riêng theo nhóm tại nhà xưởng, canteen, khu lưu trú; ký lại hợp đồng thu gom theo từng nhóm chất thải với đơn vị có chức năng; tách bạch chất thải sinh hoạt với chất thải công nghiệp thông thường và chất thải nguy hại.","pdca_check":"Kiểm tra thực tế việc phân loại tại từng điểm phát sinh; lưu chứng từ chuyển giao theo nhóm; đối chiếu khối lượng thu gom thực tế với hợp đồng. Cơ quan nhà nước nêu gương thực hiện và giám sát triển khai tại cơ sở.","pdca_act":"Chốt mốc nội bộ hoàn tất hạ tầng phân loại trước 31/12/2026 để kịp mốc bắt buộc 01/01/2027; tập huấn công nhân và nhân viên canteen; cập nhật quy trình quản lý chất thải trong hệ thống ISO 14001.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5031&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5023","ngay_cap_nhat":"2026-06-29","tieu_de":"Kế hoạch số 112/KH-UBND triển khai Chiến lược tiêu chuẩn quốc gia giai đoạn 2026-2035 trên địa bàn tỉnh Đồng Nai","so_hieu":"112/KH-UBND","co_quan":"UBND thành phố Đồng Nai","ngay_hieu_luc":"2026-06-23","linh_vuc":"Tiêu chuẩn & Chất lượng","tom_tat":"Đến năm 2030 hỗ trợ tối thiểu 500 doanh nghiệp nhỏ và vừa tiếp cận, áp dụng tiêu chuẩn quốc gia, đào tạo khoảng 10 chuyên gia và ít nhất 500 cán bộ, người lao động về tiêu chuẩn hóa; đến năm 2035 lồng ghép yêu cầu tiêu chuẩn vào tối thiểu 70% chiến lược, kế hoạch, chương trình phát triển.","pdca_plan":"Áp dụng cho doanh nghiệp sản xuất kinh doanh trên địa bàn tỉnh, ưu tiên doanh nghiệp nhỏ và vừa trong các khu công nghiệp.","pdca_do":"Chủ động nghiên cứu, cập nhật tiêu chuẩn quốc gia và quốc tế áp dụng cho sản phẩm; rà soát hoạt động sản xuất kinh doanh để lồng ghép tiêu chuẩn phù hợp.","pdca_check":"Theo dõi các chương trình hỗ trợ của cơ quan quản lý về tiêu chuẩn, đo lường, chất lượng và điều kiện tham gia.","pdca_act":"Đăng ký tham gia chương trình đào tạo và hỗ trợ áp dụng tiêu chuẩn; cử nhân sự tham gia đào tạo tiêu chuẩn hóa để tận dụng nguồn lực hỗ trợ của tỉnh.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5023&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5017","ngay_cap_nhat":"2026-06-24","tieu_de":"Quyết định số 21/2026/QĐ-UBND quy định quy trình, nội dung kiểm tra doanh nghiệp, hợp tác xã, hộ kinh doanh trên địa bàn thành phố Đồng Nai","so_hieu":"21/2026/QĐ-UBND","co_quan":"UBND thành phố Đồng Nai","ngay_hieu_luc":"2026-07-06","linh_vuc":"Hành chính & Pháp lý doanh nghiệp","tom_tat":"Chuẩn hóa quy trình kiểm tra doanh nghiệp gồm kiểm tra theo kế hoạch năm được phê duyệt và kiểm tra đột xuất khi phát hiện dấu hiệu vi phạm hoặc theo phản ánh; lựa chọn đối tượng theo nguyên tắc quản lý rủi ro.","pdca_plan":"Áp dụng cho doanh nghiệp, hợp tác xã, hộ kinh doanh hoạt động trên địa bàn thành phố Đồng Nai, trong đó có doanh nghiệp thứ cấp trong các khu công nghiệp.","pdca_do":"Nắm rõ hai hình thức kiểm tra cùng quyền và nghĩa vụ của doanh nghiệp khi được kiểm tra; duy trì bộ hồ sơ pháp lý, môi trường, lao động, phòng cháy chữa cháy ở trạng thái sẵn sàng xuất trình.","pdca_check":"Kế hoạch kiểm tra hằng năm gửi Thanh tra thành phố trước 01/11 và được phê duyệt trước 25/11, doanh nghiệp có thể chủ động tra cứu mình có trong kế hoạch năm kế tiếp hay không. Đoàn kiểm tra hoạt động theo nguyên tắc tại Nghị định 217/2025/NĐ-CP; Điều 5 quy định các hành vi bị nghiêm cấm đối với người kiểm tra.","pdca_act":"Rà soát trước danh mục hồ sơ thường bị kiểm tra và tự đánh giá mức độ đầy đủ; phân công đầu mối tiếp đoàn; lưu ý mốc tháng 11 để biết trước kế hoạch kiểm tra năm sau.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5017&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5015","ngay_cap_nhat":"2026-06-23","tieu_de":"Nghị định số 161/2026/NĐ-CP và Nghị định số 162/2026/NĐ-CP về tăng lương cơ sở lên 2,53 triệu đồng/tháng và điều chỉnh lương hưu từ 01/7/2026","so_hieu":"161/2026/NĐ-CP; 162/2026/NĐ-CP","co_quan":"Chính phủ","ngay_hieu_luc":"2026-07-01","linh_vuc":"Lao động & An toàn","tom_tat":"Lương cơ sở tăng lên 2.530.000 đồng/tháng; lương hưu và trợ cấp tăng 8% so với mức tháng 6/2026, áp dụng từ 01/7/2026.","pdca_plan":"Trực tiếp áp dụng cho cán bộ, công chức, viên chức, lực lượng vũ trang và đối tượng hưởng chính sách. Với doanh nghiệp, ảnh hưởng gián tiếp qua các mức trần, mức trợ cấp và một số khoản tính theo lương cơ sở.","pdca_do":"Rà soát các khoản trong quy chế lương thưởng và chính sách phúc lợi nội bộ đang neo theo lương cơ sở; cập nhật lại công thức tính.","pdca_check":"Đối chiếu mức đóng và mức hưởng bảo hiểm xã hội, bảo hiểm y tế có cấu phần tính theo lương cơ sở kể từ kỳ lương tháng 7/2026.","pdca_act":"Cập nhật phần mềm tính lương và các biểu mẫu liên quan; thông báo cho người lao động về các khoản có thay đổi.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5015&CatId=104","trang_thai":"Đang áp dụng"},{"id":"DNIEZA-5010","ngay_cap_nhat":"2026-06-17","tieu_de":"Thông tư của Bộ Khoa học và Công nghệ quy định danh mục lĩnh vực và thời hạn hạn chế thành lập, quản lý, điều hành doanh nghiệp sau khi thôi giữ chức vụ","so_hieu":"CHƯA XÁC ĐỊNH","co_quan":"Bộ Khoa học và Công nghệ","ngay_hieu_luc":"CHƯA XÁC ĐỊNH","linh_vuc":"Hành chính & Pháp lý doanh nghiệp","tom_tat":"Thay thế Thông tư 09/2024/TT-BTTTT ngày 30/8/2024; quy định 15 lĩnh vực và thời hạn hạn chế từ 6 đến 24 tháng đối với người thôi giữ chức vụ trong cơ quan nhà nước thuộc phạm vi quản lý của Bộ KH&CN.","pdca_plan":"Áp dụng cho cá nhân từng giữ chức vụ trong cơ quan nhà nước thuộc phạm vi quản lý của Bộ KH&CN; liên quan đến doanh nghiệp khi tuyển dụng nhân sự cấp cao xuất thân từ khu vực công.","pdca_do":"Kiểm tra thời hạn hạn chế khi tuyển dụng hoặc bổ nhiệm nhân sự từng công tác trong cơ quan nhà nước thuộc lĩnh vực khoa học và công nghệ.","pdca_check":"CHƯA KIỂM CHỨNG: chưa xác định được số hiệu và ngày hiệu lực chính xác từ bài gốc, cần đối chiếu lại trước khi sử dụng cho mục đích tuân thủ.","pdca_act":"Xác minh số hiệu Thông tư và ngày hiệu lực trên Cổng thông tin Bộ KH&CN trước khi đưa vào hồ sơ tuân thủ nhân sự.","link_goc":"https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=5010&CatId=104","trang_thai":"Chưa kiểm chứng"}];
+
+/* ============================ TIỆN ÍCH ============================ */
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function safeUrl(u){
+  u = String(u == null ? '' : u).trim();
+  return /^https?:\/\//i.test(u) ? u : '';
+}
+function parseDate(s){
+  s = String(s == null ? '' : s).trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  return null;
+}
+function today0(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+function dayDiff(a, b){ return Math.round((b - a) / 86400000); }
+function fmtVN(s){ const d = parseDate(s); if (!d) return String(s || '—');
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
+function isVerified(doc){ return /newsdetail\.aspx\?NewsId=\d+/i.test(String(doc.link_goc || '')); }
+
+/* Trạng thái suy ra từ NGÀY, không phụ thuộc cờ thủ công trong Sheet */
+function docState(doc){
+  const t = today0(), eff = parseDate(doc.ngay_hieu_luc), upd = parseDate(doc.ngay_cap_nhat);
+  const st = { upcoming:false, days:null, fresh:false, verified:isVerified(doc) };
+  if (eff && eff > t) { st.upcoming = true; st.days = dayDiff(t, eff); }
+  if (upd && dayDiff(upd, t) >= 0 && dayDiff(upd, t) <= 7) st.fresh = true;
+  return st;
+}
+
+/* ===================== PARSER CSV CHỊU XUỐNG DÒNG ===================== */
+function parseCSV(text){
+  text = String(text).replace(/^﻿/, '');
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i+1] === '"'){ cur += '"'; i++; } else q = false; }
+      else cur += ch;
+    } else if (ch === '"'){ q = true; }
+    else if (ch === ','){ row.push(cur); cur = ''; }
+    else if (ch === '\r'){ /* bỏ qua */ }
+    else if (ch === '\n'){ row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += ch;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+const FIELD_MAP = {
+  id:'id', ngay_cap_nhat:'ngay_cap_nhat', tieu_de:'tieu_de', so_hieu_van_ban:'so_hieu',
+  co_quan_ban_hanh:'co_quan', ngay_hieu_luc:'ngay_hieu_luc', linh_vuc:'linh_vuc',
+  tom_tat_nhanh:'tom_tat', pdca_plan:'pdca_plan', pdca_do:'pdca_do', pdca_check:'pdca_check',
+  pdca_act:'pdca_act', link_goc:'link_goc', trang_thai:'trang_thai'
+};
+function normKey(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,'_'); }
+
+/* Ánh xạ theo TÊN CỘT — Sheet đổi thứ tự cột vẫn chạy đúng */
+function rowsToDocs(rows){
+  if (!rows.length) return [];
+  const head = rows[0].map(normKey);
+  const idx = {};
+  head.forEach((h, i) => { if (FIELD_MAP[h]) idx[FIELD_MAP[h]] = i; });
+  if (idx.tieu_de === undefined || idx.id === undefined) return [];
+  const out = [];
+  for (let r = 1; r < rows.length; r++){
+    const row = rows[r];
+    if (!row || row.every(c => !String(c).trim())) continue;
+    const d = {};
+    Object.keys(idx).forEach(k => { d[k] = String(row[idx[k]] == null ? '' : row[idx[k]]).trim(); });
+    if (!d.tieu_de) continue;
+    if (!d.id) d.id = 'AUTO-' + r;
+    out.push(d);
+  }
+  return out;
+}
+
+/* Chống trùng: ưu tiên ID, sau đó số hiệu văn bản */
+function dedupe(list){
+  const seenId = new Set(), seenSh = new Set(), out = [];
+  for (const d of list){
+    const sh = String(d.so_hieu || '').trim().toLowerCase();
+    if (seenId.has(d.id)) continue;
+    if (sh && sh !== 'chưa xác định' && seenSh.has(sh)) continue;
+    seenId.add(d.id); if (sh) seenSh.add(sh);
+    out.push(d);
+  }
+  return out;
+}
+function sortDocs(list){
+  return list.slice().sort((a, b) => {
+    const da = parseDate(a.ngay_cap_nhat), db = parseDate(b.ngay_cap_nhat);
+    if (da && db && +da !== +db) return db - da;
+    if (da && !db) return -1;
+    if (!da && db) return 1;
+    return String(a.tieu_de).localeCompare(String(b.tieu_de), 'vi');
+  });
+}
+
+/* ============================ TRẠNG THÁI ============================ */
+let allDocs = [], visibleCount = PAGE_SIZE, lastRendered = [];
+let bookmarks = [];
+try { bookmarks = JSON.parse(localStorage.getItem('dnieza_bookmarks') || '[]'); } catch(e) { bookmarks = []; }
+const chips = { upcoming:false, bookmark:false, unverified:false };
+let syncState = { mode:'loading', detail:'' };
+
+/* ============================ GIAO DIỆN ============================ */
+function toggleTheme(){
+  const h = document.documentElement;
+  const dark = h.classList.toggle('dark');
+  try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch(e){}
+}
+try {
+  if (localStorage.getItem('theme') === 'dark' ||
+     (!localStorage.getItem('theme') && matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  }
+} catch(e){}
+
+function setSync(mode, detail){
+  syncState = { mode, detail };
+  const badge = document.getElementById('syncBadge');
+  const txt = document.getElementById('syncBadgeText');
+  const styles = {
+    live:   ['bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300', 'bg-emerald-500', 'Đồng bộ trực tiếp'],
+    cache:  ['bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300', 'bg-rose-500', 'Không đồng bộ được'],
+    loading:['bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300', 'bg-slate-400', 'Đang tải…']
+  };
+  const [cls, dot, label] = styles[mode] || styles.loading;
+  badge.className = 'hidden sm:inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-full ' + cls;
+  badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full ' + dot + ' mr-1.5"></span><span id="syncBadgeText">' + esc(label) + '</span>';
+}
+
+function renderAlerts(){
+  const zone = document.getElementById('alertZone');
+  const out = [];
+
+  if (syncState.mode === 'cache'){
+    const isFile = location.protocol === 'file:';
+    out.push(`
+      <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-circle-exclamation text-rose-500 mt-0.5"></i>
+          <div class="text-xs text-rose-900 dark:text-rose-200 leading-relaxed">
+            <strong class="block text-sm mb-1">Không lấy được dữ liệu mới từ Google Sheet</strong>
+            Đang hiển thị <strong>dữ liệu nhúng sẵn ngày ${esc(SEED_DATE)}</strong> — đây KHÔNG phải bản mới nhất.
+            ${isFile ? `<div class="mt-2 p-2.5 rounded-lg bg-rose-100/70 dark:bg-rose-900/30">
+              <strong>Nguyên nhân:</strong> bạn đang mở file trực tiếp từ ổ đĩa (<code>file://</code>). Trình duyệt chặn kết nối tới Google Sheet ở chế độ này.
+              <br><strong>Cách xử lý:</strong> mở trang qua một địa chỉ web (http/https) — ví dụ GitHub Pages, Google Sites — thay vì nhấp đúp vào file HTML.
+            </div>` : `<div class="mt-1.5">Chi tiết: ${esc(syncState.detail || 'không rõ')}. Kiểm tra kết nối mạng và quyền chia sẻ của Google Sheet.</div>`}
+          </div>
+        </div>
+      </div>`);
+  }
+
+  if (allDocs.length){
+    const newest = allDocs.map(d => parseDate(d.ngay_cap_nhat)).filter(Boolean).sort((a,b) => b-a)[0];
+    if (newest){
+      const age = dayDiff(newest, today0());
+      if (age > STALE_DAYS && syncState.mode === 'live'){
+        out.push(`
+          <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50">
+            <div class="flex items-start gap-3">
+              <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+              <div class="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                <strong class="block text-sm mb-1">Dữ liệu có thể đã cũ</strong>
+                Văn bản mới nhất trong Sheet là ngày <strong>${esc(fmtVN(newest.getFullYear()+'-'+String(newest.getMonth()+1).padStart(2,'0')+'-'+String(newest.getDate()).padStart(2,'0')))}</strong>
+                — cách đây ${age} ngày. Đồng bộ trực tiếp vẫn hoạt động, nhưng <strong>tiến trình cập nhật tự động lúc 8h sáng có thể đã dừng</strong>. Hãy kiểm tra lại.
+              </div>
+            </div>
+          </div>`);
+      }
+    }
+  }
+  zone.innerHTML = out.join('');
+}
+
+function renderDeadlines(){
+  const panel = document.getElementById('deadlinePanel');
+  const t = today0();
+  const soon = allDocs.map(d => ({ d, s: docState(d) }))
+    .filter(x => x.s.upcoming && x.s.days <= 30)
+    .sort((a, b) => a.s.days - b.s.days);
+  if (!soon.length){ panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+  panel.classList.remove('hidden');
+  const items = soon.map(({ d, s }) => {
+    const urgent = s.days <= 7;
+    return `<button onclick="openModal('${esc(d.id)}')" class="text-left w-full p-3 rounded-xl border transition hover:shadow-sm ${urgent
+      ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50'
+      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}">
+      <div class="flex items-center justify-between gap-2 mb-1">
+        <span class="text-[11px] font-bold ${urgent ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}">
+          <i class="fa-regular fa-clock mr-1"></i>Còn ${s.days} ngày
+        </span>
+        <span class="text-[10px] text-slate-500">${esc(fmtVN(d.ngay_hieu_luc))}</span>
+      </div>
+      <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 clamp2 leading-snug">${esc(d.so_hieu)} — ${esc(d.tieu_de)}</div>
+    </button>`;
+  }).join('');
+  panel.innerHTML = `
+    <div class="p-4 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-hourglass-half text-amber-500"></i>Sắp có hiệu lực trong 30 ngày tới
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">${items}</div>
+    </div>`;
+}
+
+function buildCategoryOptions(){
+  const sel = document.getElementById('categoryFilter');
+  const cur = sel.value || 'ALL';
+  const cats = [...new Set(allDocs.map(d => String(d.linh_vuc || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b,'vi'));
+  sel.innerHTML = '<option value="ALL">Tất cả lĩnh vực</option>' +
+    cats.map(c => {
+      const n = allDocs.filter(d => d.linh_vuc === c).length;
+      return `<option value="${esc(c)}">${esc(c)} (${n})</option>`;
+    }).join('');
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : 'ALL';
+}
+
+function filterDocs(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const cat = document.getElementById('categoryFilter').value;
+  return allDocs.filter(d => {
+    const s = docState(d);
+    if (chips.upcoming && !s.upcoming) return false;
+    if (chips.bookmark && !bookmarks.includes(d.id)) return false;
+    if (chips.unverified && s.verified) return false;
+    if (cat !== 'ALL' && String(d.linh_vuc).trim() !== cat) return false;
+    if (!q) return true;
+    return [d.tieu_de, d.so_hieu, d.co_quan, d.linh_vuc, d.tom_tat, d.pdca_plan, d.pdca_do, d.pdca_check, d.pdca_act]
+      .join(' ').toLowerCase().includes(q);
+  });
+}
+
+function badgeHTML(doc){
+  const s = docState(doc), out = [];
+  if (s.upcoming){
+    const cls = s.days <= 7
+      ? 'bg-rose-500 text-white'
+      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300';
+    out.push(`<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${cls}"><i class="fa-regular fa-clock mr-1"></i>CÒN ${s.days} NGÀY</span>`);
+  } else {
+    out.push('<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">ĐANG ÁP DỤNG</span>');
+  }
+  if (s.fresh) out.push('<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300">MỚI</span>');
+  if (!s.verified) out.push('<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300" title="Không có link bài gốc để đối chiếu"><i class="fa-solid fa-triangle-exclamation mr-1"></i>CHƯA KIỂM CHỨNG</span>');
+  return out.join('');
+}
+
+function cardHTML(doc){
+  const marked = bookmarks.includes(doc.id);
+  const url = safeUrl(doc.link_goc);
+  const box = (color, icon, label, text) => `
+    <div class="p-3 rounded-xl bg-${color}-50/70 dark:bg-${color}-950/20 border border-${color}-100 dark:border-${color}-900/30">
+      <div class="font-bold text-${color}-700 dark:text-${color}-300 flex items-center gap-1.5 mb-1 text-[11px]">
+        <i class="fa-solid ${icon}"></i><span>${label}</span>
+      </div>
+      <p class="text-slate-600 dark:text-slate-400 text-[11px] leading-normal clamp2">${esc(text)}</p>
+    </div>`;
+  return `
+  <div class="doc-card bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+    <div class="flex items-start justify-between gap-3 mb-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <i class="fa-solid fa-tag text-[10px] mr-1"></i>${esc(doc.linh_vuc)}
+        </span>
+        ${badgeHTML(doc)}
+        <span class="text-xs text-slate-500 dark:text-slate-400"><i class="fa-regular fa-calendar text-[11px] mr-1"></i>Hiệu lực: <strong>${esc(fmtVN(doc.ngay_hieu_luc))}</strong></span>
+      </div>
+      <button onclick="toggleBookmark('${esc(doc.id)}', event)" class="shrink-0 text-slate-400 hover:text-amber-500 transition p-1 no-print" title="Lưu văn bản">
+        <i class="${marked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark text-base"></i>
+      </button>
+    </div>
+    <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition mb-2" onclick="openModal('${esc(doc.id)}')">${esc(doc.tieu_de)}</h3>
+    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">${esc(doc.tom_tat)}</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4 text-xs">
+      ${box('sky','fa-compass','P — PLAN (Phạm vi &amp; Đối tượng)', doc.pdca_plan)}
+      ${box('emerald','fa-list-check','D — DO (Yêu cầu thực thi)', doc.pdca_do)}
+      ${box('amber','fa-shield-halved','C — CHECK (Kiểm tra &amp; Rủi ro)', doc.pdca_check)}
+      ${box('purple','fa-screwdriver-wrench','A — ACT (Khuyến nghị cải tiến)', doc.pdca_act)}
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+      <div class="text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2">
+        <span>Số hiệu: <strong>${esc(doc.so_hieu)}</strong></span><span>•</span><span>${esc(doc.co_quan)}</span>
+      </div>
+      <div class="flex items-center gap-3 no-print">
+        <button onclick="openModal('${esc(doc.id)}')" class="font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition">Chi tiết PDCA <i class="fa-solid fa-angle-right text-[10px] ml-0.5"></i></button>
+        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" title="Mở bài gốc"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function rerender(){ visibleCount = PAGE_SIZE; render(); }
+
+function render(){
+  const list = filterDocs();
+  lastRendered = list;
+  const feed = document.getElementById('documentsFeed');
+  const empty = document.getElementById('emptyState');
+  const btn = document.getElementById('loadMoreBtn');
+
+  document.getElementById('statTotal').textContent = allDocs.length;
+  const up = allDocs.filter(d => docState(d).upcoming);
+  document.getElementById('statUpcoming').textContent = up.length;
+  document.getElementById('cntUpcoming').textContent = up.length;
+  document.getElementById('cntBookmark').textContent = bookmarks.length;
+  document.getElementById('cntUnverified').textContent = allDocs.filter(d => !docState(d).verified).length;
+
+  const newest = allDocs.map(d => parseDate(d.ngay_cap_nhat)).filter(Boolean).sort((a,b) => b-a)[0];
+  document.getElementById('statData').textContent = newest
+    ? String(newest.getDate()).padStart(2,'0') + '/' + String(newest.getMonth()+1).padStart(2,'0') : '—';
+
+  document.getElementById('filterSummary').textContent =
+    list.length === allDocs.length ? '' : `Hiển thị ${list.length}/${allDocs.length} văn bản`;
+
+  if (!list.length){ feed.innerHTML = ''; empty.classList.remove('hidden'); btn.classList.add('hidden'); return; }
+  empty.classList.add('hidden');
+  const shown = list.slice(0, visibleCount);
+  feed.innerHTML = shown.map(cardHTML).join('');
+  if (list.length > shown.length){
+    btn.classList.remove('hidden');
+    document.getElementById('loadMoreCount').textContent = `(còn ${list.length - shown.length})`;
+  } else btn.classList.add('hidden');
+}
+function loadMore(){ visibleCount += PAGE_SIZE; render(); }
+
+function toggleChip(key){
+  chips[key] = !chips[key];
+  document.querySelectorAll('.chip').forEach(el => {
+    const k = el.dataset.chip, on = chips[k];
+    el.className = 'chip px-3 py-1.5 rounded-lg text-xs font-medium border transition ' + (on
+      ? 'bg-emerald-600 border-emerald-600 text-white'
+      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300');
+  });
+  rerender();
+}
+function toggleBookmark(id, ev){
+  if (ev) ev.stopPropagation();
+  bookmarks = bookmarks.includes(id) ? bookmarks.filter(x => x !== id) : bookmarks.concat(id);
+  try { localStorage.setItem('dnieza_bookmarks', JSON.stringify(bookmarks)); } catch(e){}
+  render();
+}
+
+/* ============================ MODAL ============================ */
+function openModal(id){
+  const doc = allDocs.find(d => d.id === id);
+  if (!doc) return;
+  document.getElementById('modalTitle').textContent = doc.tieu_de;
+  document.getElementById('modalChips').innerHTML =
+    `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">${esc(doc.linh_vuc)}</span>` + badgeHTML(doc);
+
+  const link = document.getElementById('modalSourceLink');
+  const url = safeUrl(doc.link_goc);
+  if (url){ link.href = url; link.classList.remove('hidden'); } else { link.href = '#'; link.classList.add('hidden'); }
+
+  const s = docState(doc);
+  const pillar = (color, letter, title, text) => `
+    <div class="p-4 rounded-xl bg-${color}-50/80 dark:bg-${color}-950/30 border border-${color}-200 dark:border-${color}-900/40">
+      <div class="text-xs font-bold text-${color}-800 dark:text-${color}-300 flex items-center gap-2 mb-1.5">
+        <span class="w-5 h-5 rounded-md bg-${color}-600 text-white flex items-center justify-center text-[10px]">${letter}</span><span>${title}</span>
+      </div>
+      <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${esc(text)}</p>
+    </div>`;
+
+  document.getElementById('modalBody').innerHTML = `
+    ${!s.verified ? `<div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-800 dark:text-rose-200">
+      <i class="fa-solid fa-triangle-exclamation mr-1.5"></i><strong>Chưa kiểm chứng:</strong> mục này không có link tới bài gốc trên cổng DNIEZA. Hãy đối chiếu số hiệu và ngày hiệu lực với công báo trước khi đưa vào hồ sơ tuân thủ.
+    </div>` : ''}
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs">
+      <div><span class="text-slate-500 dark:text-slate-400 block">Số hiệu:</span><strong>${esc(doc.so_hieu)}</strong></div>
+      <div><span class="text-slate-500 dark:text-slate-400 block">Cơ quan ban hành:</span><strong>${esc(doc.co_quan)}</strong></div>
+      <div><span class="text-slate-500 dark:text-slate-400 block">Ngày có hiệu lực:</span><strong class="text-emerald-600 dark:text-emerald-400">${esc(fmtVN(doc.ngay_hieu_luc))}</strong>
+        ${s.upcoming ? `<span class="block text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">Còn ${s.days} ngày</span>` : ''}</div>
+    </div>
+    <div>
+      <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Tóm tắt nội dung trọng yếu</h4>
+      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">${esc(doc.tom_tat)}</p>
+    </div>
+    <div class="space-y-3 pt-1">
+      ${pillar('sky','P','PLAN — PHẠM VI &amp; ĐỐI TƯỢNG ÁP DỤNG', doc.pdca_plan)}
+      ${pillar('emerald','D','DO — YÊU CẦU THỰC THI &amp; NGHĨA VỤ BẮT BUỘC', doc.pdca_do)}
+      ${pillar('amber','C','CHECK — KIỂM TRA, GIÁM SÁT &amp; RỦI RO', doc.pdca_check)}
+      ${pillar('purple','A','ACT — CẢI TIẾN &amp; HÀNH ĐỘNG CHO NHÀ MÁY', doc.pdca_act)}
+    </div>`;
+
+  const m = document.getElementById('docModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  const m = document.getElementById('docModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ============================ ĐỒNG BỘ ============================ */
+function applyDocs(list){
+  allDocs = sortDocs(dedupe(list));
+  buildCategoryOptions();
+  renderAlerts();
+  renderDeadlines();
+  rerender();
+}
+
+async function fetchSheetData(){
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('fa-spin');
+  setSync('loading');
+  try {
+    const res = await fetch(SHEET_CSV + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const docs = rowsToDocs(parseCSV(await res.text()));
+    if (!docs.length) throw new Error('Sheet không có dòng dữ liệu hợp lệ');
+    setSync('live');
+    applyDocs(docs);
+  } catch (err){
+    setSync('cache', err && err.message ? err.message : String(err));
+    applyDocs(SEED_DATA);
+  } finally {
+    icon.classList.remove('fa-spin');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sheetLink').href = SHEET_EDIT;
+  document.getElementById('footerSource').href = SOURCE_URL;
+  setSync('loading');
+  applyDocs(SEED_DATA);
+  fetchSheetData();
+});
+</script>
+</body>
+</html>
