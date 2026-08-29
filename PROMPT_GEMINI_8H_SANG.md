@@ -17,7 +17,9 @@ Với mỗi BÀI VIẾT MỚI chưa có trong Google Sheet, bóc tách thành c�
 PDCA và GHI THÊM (append) vào cuối Sheet. Đối tượng phục vụ: cán bộ HSE và pháp chế của một
 nhà máy sản xuất nằm trong KCN Đồng Nai.
 
-GOOGLE SHEET ĐÍCH (trang tính đầu tiên; dòng tiêu đề ở hàng 1, dữ liệu ở hàng 2 đến hàng 92 — đã có sẵn 91 dòng, phủ toàn bộ năm 2026 tính đến ngày 28/8/2026):
+GOOGLE SHEET ĐÍCH (trang tính đầu tiên; dòng tiêu đề ở hàng 1, dữ liệu bắt đầu từ hàng 2
+và kéo dài tới hàng cuối cùng có dữ liệu — số dòng TĂNG LÊN sau mỗi lần chạy, TUYỆT ĐỐI
+KHÔNG giả định một hàng cuối cố định nào):
 https://docs.google.com/spreadsheets/d/1PVid8IX8djnxoa4LEUBGve9rDz3p3DCP8oSbPcwM78A/edit
 
 QUY TẮC BẮT BUỘC — vi phạm bất kỳ mục nào thì BỎ QUA dòng đó, không được đoán:
@@ -99,6 +101,24 @@ QUY TẮC BẮT BUỘC — vi phạm bất kỳ mục nào thì BỎ QUA dòng �
      và ghi rõ "CHƯA KIỂM CHỨNG:" ở đầu ô PDCA_Check.
    - Không gộp hai văn bản khác chủ đề vào một dòng.
 
+   NGÀY HIỆU LỰC — ĐỌC KỸ, ĐÂY LÀ CHỖ SAI NHIỀU NHẤT
+   Ngày ban hành KHÔNG PHẢI ngày hiệu lực. Rất nhiều bài chỉ nêu "ban hành ngày X"
+   rồi thôi. Đưa ngày ban hành vào ô Ngay_Hieu_Luc là BỊA, tuyệt đối không làm.
+   Cũng KHÔNG được tự suy ra ngày hiệu lực bằng quy tắc 45 ngày hay bất kỳ quy tắc
+   pháp lý nào — đó là suy diễn, không phải đọc được từ bài.
+
+   Khi bài KHÔNG nêu rõ ngày hiệu lực, làm đúng 3 việc:
+     a) Ghi "CHƯA XÁC ĐỊNH" vào ô Ngay_Hieu_Luc.
+     b) Mở đầu ô PDCA_Check bằng đúng câu:
+        "CHƯA KIỂM CHỨNG: bài gốc không nêu ngày hiệu lực, cần tra cứu văn bản gốc."
+     c) Nếu bài có nêu ngày ban hành, ghi ngày đó vào ô Tom_Tat theo dạng
+        "Ban hành ngày DD/MM/YYYY; ..." để người đọc còn manh mối mà tra.
+
+   Vì sao phải làm đủ 3 việc: WebApp tính hạn tuân thủ từ ô Ngay_Hieu_Luc. Dòng để
+   "CHƯA XÁC ĐỊNH" sẽ KHÔNG BAO GIỜ xuất hiện trong cảnh báo "Sắp có hiệu lực 30
+   ngày tới". Nếu không ghi rõ ở PDCA_Check, người dùng sẽ không biết là mình cần
+   tự đi tra, và sẽ lỡ mốc tuân thủ mà không hay biết.
+
 8. CỘT Trang_Thai
    - Chỉ ghi một trong: Mới / Đang áp dụng / Sắp có hiệu lực.
    - Lưu ý: WebApp TỰ TÍNH trạng thái từ ngày tháng, cột này chỉ để tham khảo.
@@ -130,6 +150,8 @@ Nếu hôm nay không có bài mới nào đủ điều kiện: KHÔNG ghi gì v
 | Cấm xuống dòng trong ô | Một ô có xuống dòng từng làm mất trọn dòng dữ liệu, không báo lỗi |
 | Chỉ append, không ghi đè | Chuyên mục chỉ hiển thị 10 bài mới nhất; ghi đè là mất lịch sử vĩnh viễn |
 | Cấm bịa | Nghị định 286/2026 từng bị mô tả nhầm thành văn bản về giấy phép lao động |
+| Không ghim hàng cuối cố định | Prompt từng ghi "dữ liệu đến hàng 92". Sheet dài thêm mỗi ngày, tin con số đó là đọc thiếu các dòng mới rồi ghi trùng mà không hay |
+| Ngày ban hành ≠ ngày hiệu lực | 25/91 dòng không có ngày hiệu lực vì bài gốc không nêu. Đây là hành vi ĐÚNG — nhét ngày ban hành vào cho đủ ô mới là sai |
 
 Bộ KH&CN cũng đã khuyến cáo chính thức (Công văn 6044/BKHCN-CNCNTT): AI chỉ là công cụ hỗ trợ,
 người thực hiện phải kiểm chứng lại toàn bộ kết quả do AI tạo ra khi rà soát văn bản pháp luật.
@@ -166,7 +188,7 @@ Di chuột lên nhãn để xem dòng đó sai ở chỗ nào. Các loại cản
 |---|---|---|
 | Gemini tự đánh dấu CHƯA KIỂM CHỨNG | Ô `PDCA_Check` mở đầu bằng "CHƯA KIỂM CHỨNG:" — Gemini thừa nhận không chắc | Mở bài gốc đối chiếu, sửa lại nội dung PDCA rồi xoá tiền tố đó |
 | Số hiệu còn ghi "CHƯA XÁC ĐỊNH" | Bài viết không nêu số hiệu | Tra trên Cổng thông tin VBQPPL, điền số hiệu thật |
-| Chưa có ngày hiệu lực nên không tính được hạn | Ô ngày trống hoặc ghi "CHƯA XÁC ĐỊNH" | Dòng này **không bao giờ vào được cảnh báo sắp hết hạn** — phải bổ sung ngày, nếu không sẽ bỏ lỡ mốc tuân thủ |
+| Chưa có ngày hiệu lực nên không tính được hạn | Bài gốc không nêu ngày hiệu lực. Đây thường KHÔNG phải lỗi của Gemini — ngày ban hành không thay được ngày hiệu lực | Dòng này **không bao giờ vào được cảnh báo sắp hết hạn**. Tra ngày hiệu lực thật trên Cổng thông tin VBQPPL rồi điền vào Sheet. Kiểm tra ô `PDCA_Check` có mở đầu bằng "CHƯA KIỂM CHỨNG: bài gốc không nêu ngày hiệu lực" không — thiếu câu này nghĩa là Gemini đang bỏ qua quy tắc 7 |
 | Ngày ... sai định dạng | Google Sheets đã tự đổi ô ngày sang kiểu Ngày tháng | Định dạng lại cột B và F thành "Văn bản thuần túy", nhập lại YYYY-MM-DD |
 | Ngày ... không đọc được | Ô ngày hỏng hẳn | Nhập lại đúng YYYY-MM-DD |
 | Lĩnh vực ngoài 6 giá trị chuẩn | Gemini tự tạo nhãn mới | Sửa về đúng 1 trong 6 giá trị ở quy tắc 5 |
