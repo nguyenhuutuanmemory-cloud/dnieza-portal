@@ -1,8 +1,8 @@
 # Prompt cho Gemini — cập nhật DNIEZA_News_Database lúc 8h00 hằng ngày
 
 Dán toàn bộ phần trong khung dưới đây làm chỉ dẫn cho tác vụ tự động.
-WebApp đã có lớp phòng vệ riêng, nhưng prompt càng chặt thì càng ít dòng rơi vào bảng
-"Dữ liệu cần rà lại" (xem mục [Cách tự kiểm mỗi tuần](#cách-tự-kiểm-mỗi-tuần) ở cuối file).
+WebApp đã có lớp phòng vệ riêng, nhưng prompt càng chặt thì càng ít văn bản bị gắn nhãn
+"Cần rà lại" (xem mục [Cách tự kiểm mỗi tuần](#cách-tự-kiểm-mỗi-tuần) ở cuối file).
 
 ---
 
@@ -156,8 +156,11 @@ Tự kiểm trên bản lưu cũ là rà soát nhầm dữ liệu — số liệ
 
 ### Bước 2 — Bấm chip "Cần rà lại"
 
-Đây mới là thước đo thật. Chip này gom mọi dòng vi phạm quy tắc của prompt, và bảng
-**"Dữ liệu cần rà lại"** ngay đầu trang liệt kê rõ từng dòng sai ở chỗ nào:
+Đây mới là thước đo thật. Chip gom mọi dòng vi phạm quy tắc của prompt; con số trên chip
+chính là chỉ số cần theo dõi hàng tuần.
+
+Mỗi văn bản dính lỗi mang nhãn **`CẦN RÀ LẠI`** màu hổ phách, nằm cạnh nhãn `ĐANG ÁP DỤNG`.
+Di chuột lên nhãn để xem dòng đó sai ở chỗ nào. Các loại cảnh báo:
 
 | Cảnh báo | Nghĩa | Cách xử lý |
 |---|---|---|
@@ -169,8 +172,9 @@ Tự kiểm trên bản lưu cũ là rà soát nhầm dữ liệu — số liệ
 | Lĩnh vực ngoài 6 giá trị chuẩn | Gemini tự tạo nhãn mới | Sửa về đúng 1 trong 6 giá trị ở quy tắc 5 |
 | Thiếu link bài gốc | Không có link `newsdetail` để đối chiếu | Bổ sung link, hoặc xoá dòng nếu không truy được nguồn |
 
-Cuối bảng còn báo số **dòng trùng đã bị ẩn** kèm lý do. WebApp chỉ ẩn khi hiển thị, không
-sửa Sheet — nên vào Sheet xoá tay các dòng thừa đó.
+Ngoài ra WebApp còn tự ẩn các **dòng trùng** khi hiển thị, nhưng không sửa Sheet — dòng
+thừa vẫn nằm nguyên đó, phải vào xoá tay. Danh sách dòng bị ẩn không hiện trên giao diện;
+muốn xem thì bấm F12 mở console của trình duyệt, tìm dòng bắt đầu bằng `[DNIEZA]`.
 
 ### Bước 3 — So với mốc nền
 

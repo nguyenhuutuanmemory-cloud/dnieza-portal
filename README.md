@@ -26,7 +26,7 @@ Sheet, app sẽ hiện cảnh báo đỏ và rơi về dữ liệu cũ.
 
 - **Thẻ PDCA** cho từng văn bản: Plan / Do / Check / Act, viết cho người vận hành nhà máy
 - **Sắp có hiệu lực trong 30 ngày** — panel riêng đầu trang, dưới 7 ngày thì chuyển đỏ
-- **Dữ liệu cần rà lại** — panel soi các dòng vi phạm quy tắc của prompt (xem dưới)
+- **Nhãn `CẦN RÀ LẠI`** trên văn bản có dữ liệu đáng ngờ (xem dưới)
 - Lọc theo 6 lĩnh vực, tìm kiếm toàn văn kể cả trong nội dung PDCA
 - Đánh dấu văn bản cần theo dõi (lưu trong trình duyệt, riêng từng máy)
 - Chế độ tối, in / lưu PDF danh sách đang lọc
@@ -50,13 +50,16 @@ cập nhật 8h sáng có thể đã dừng.
 ## Lớp phòng vệ dữ liệu
 
 Prompt ràng buộc Gemini, nhưng prompt có thể bị nới lỏng mà không ai hay. App tự kiểm tra
-lại và đưa mọi vi phạm ra bảng **"Dữ liệu cần rà lại"**:
+lại và gắn nhãn **`CẦN RÀ LẠI`** lên văn bản dính một trong các lỗi sau:
 
 - Thiếu link bài gốc để đối chiếu
 - Số hiệu trống hoặc còn ghi "CHƯA XÁC ĐỊNH"
 - Gemini tự đánh dấu "CHƯA KIỂM CHỨNG" ở đầu ô `PDCA_Check`
 - Ngày trống, không đọc được, hoặc sai chuẩn `YYYY-MM-DD`
 - Lĩnh vực nằm ngoài 6 giá trị chuẩn
+
+Nhãn nằm cạnh `ĐANG ÁP DỤNG` và `MỚI`, chỉ để nhắc nhở khi đọc — di chuột lên nhãn sẽ hiện
+đúng dòng đó sai ở chỗ nào. Muốn xem hết một lượt thì bấm chip **"Cần rà lại"** ở thanh lọc.
 
 Riêng phần ngày tháng đáng nói: Google Sheets hay tự đổi ô ngày sang kiểu `M/D/YYYY`.
 Chuỗi `9/25/2026` trông vẫn hợp lệ nhưng nếu đọc theo kiểu Việt Nam sẽ thành ngày 9 tháng
@@ -66,6 +69,7 @@ Chuỗi `9/25/2026` trông vẫn hợp lệ nhưng nếu đọc theo kiểu Vi�
 App cũng chống trùng theo đúng luật của prompt: bỏ tiền tố "Nghị định số", bỏ dấu, và coi
 `TT-BTNMT` ≡ `TT-BNNMT` (Bộ TN&MT đã sáp nhập vào Bộ NN&MT). Gặp trùng thì giữ dòng đầy
 đủ hơn, và **chỉ ẩn khi hiển thị** — dòng thừa vẫn nằm trong Sheet, phải vào xoá tay.
+Danh sách dòng bị ẩn được ghi ra console của trình duyệt (F12), không hiện trên giao diện.
 
 Quy trình tự kiểm hàng tuần: xem mục cuối [PROMPT_GEMINI_8H_SANG.md](PROMPT_GEMINI_8H_SANG.md).
 
