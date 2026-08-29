@@ -33,9 +33,14 @@ QUY TẮC BẮT BUỘC — vi phạm bất kỳ mục nào thì BỎ QUA dòng �
    nghiêm trọng nhất — thà bỏ lỡ một ngày còn hơn tạo dòng trùng.
 
    BƯỚC 2 — Chuẩn hóa trước khi so sánh số hiệu.
-   Cùng một văn bản có thể được viết nhiều kiểu khác nhau. Trước khi so, hãy bỏ chữ "số",
-   bỏ mọi khoảng trắng, và chuyển về chữ HOA. Ví dụ tất cả các cách viết sau là MỘT văn bản:
+   Cùng một văn bản có thể được viết nhiều kiểu khác nhau. Cách chuẩn hóa: CẮT LẤY CỤM
+   SỐ HIỆU BẮT ĐẦU TỪ CHỮ SỐ ĐẦU TIÊN, bỏ hết phần chữ đứng trước (như "Nghị định số",
+   "Thông tư số") và bỏ hết phần đuôi phía sau (như "ngày 31/7/2026"), rồi viết HOA.
+   Ví dụ tất cả các cách viết sau là MỘT văn bản:
      "Nghị định số 110/2026/NĐ-CP"  =  "110/2026/NĐ-CP"  =  "110/2026/nđ-cp"
+     "Số 45/2026/TT-BKHCN ngày 31/7/2026"  =  "45/2026/TT-BKHCN"
+   Lưu ý dấu chấm trong số hiệu là MỘT PHẦN của số hiệu, không được cắt bỏ:
+   66.17/2026/NQ-CP và 66.19/2026/NQ-CP là HAI nghị quyết KHÁC NHAU.
    Đặc biệt cảnh giác với văn bản đổi tên cơ quan ban hành: 11/2026/TT-BNNMT và
    11/2026/TT-BTNMT là CÙNG một Thông tư (Bộ Tài nguyên Môi trường đã sáp nhập thành Bộ
    Nông nghiệp và Môi trường). Gặp trường hợp này: coi là TRÙNG, không ghi thêm.
@@ -72,7 +77,11 @@ QUY TẮC BẮT BUỘC — vi phạm bất kỳ mục nào thì BỎ QUA dòng �
    - Phải tách thành NHIỀU DÒNG, mỗi văn bản một dòng. Đây là loại bài dễ bị bỏ sót nhất.
 
 4. LINK GỐC
-   - Link_Goc BẮT BUỘC có dạng: https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=<số>&CatId=104
+   - Link_Goc BẮT BUỘC là link BÀI CHI TIẾT, dạng:
+     https://dnieza.dongnai.gov.vn/Pages/newsdetail.aspx?NewsId=<số>&CatId=<số>
+   - Phần CatId: CHÉP ĐÚNG giá trị có trong URL thật của bài. KHÔNG ép về 104.
+     Đa số bài nằm ở CatId=104, nhưng có bài thuộc 99, 102, 105, 106, 108 — ép cứng
+     về 104 sẽ tạo ra link hỏng, dẫn người dùng tới bài khác hoặc trang trống.
    - KHÔNG được thay bằng link trang danh mục (news.aspx?CatId=...).
    - Nếu không xác định được bài chi tiết: BỎ QUA văn bản đó, không ghi dòng.
 
@@ -111,8 +120,12 @@ QUY TẮC BẮT BUỘC — vi phạm bất kỳ mục nào thì BỎ QUA dòng �
      a) Ghi "CHƯA XÁC ĐỊNH" vào ô Ngay_Hieu_Luc.
      b) Mở đầu ô PDCA_Check bằng đúng câu:
         "CHƯA KIỂM CHỨNG: bài gốc không nêu ngày hiệu lực, cần tra cứu văn bản gốc."
-     c) Nếu bài có nêu ngày ban hành, ghi ngày đó vào ô Tom_Tat theo dạng
+     c) Nếu bài có nêu ngày ban hành, ghi ngày đó vào ô Tom_Tat_Nhanh theo dạng
         "Ban hành ngày DD/MM/YYYY; ..." để người đọc còn manh mối mà tra.
+
+   Nếu dòng đó vừa thiếu số hiệu VỪA thiếu ngày hiệu lực: gộp thành một câu duy nhất
+   ở đầu PDCA_Check, ví dụ "CHƯA KIỂM CHỨNG: bài gốc không nêu số hiệu và ngày hiệu
+   lực, cần tra cứu văn bản gốc." Không viết hai câu CHƯA KIỂM CHỨNG chồng nhau.
 
    Vì sao phải làm đủ 3 việc: WebApp tính hạn tuân thủ từ ô Ngay_Hieu_Luc. Dòng để
    "CHƯA XÁC ĐỊNH" sẽ KHÔNG BAO GIỜ xuất hiện trong cảnh báo "Sắp có hiệu lực 30
