@@ -98,6 +98,8 @@ tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['
 
   <div id="deadlinePanel" class="hidden mb-6"></div>
 
+  <div id="qualityPanel" class="hidden mb-6"></div>
+
   <div class="mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 no-print">
     <div class="md:col-span-6 relative">
       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-sm"></i></div>
@@ -125,6 +127,9 @@ tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['
     </button>
     <button data-chip="unverified" onclick="toggleChip('unverified')" class="chip px-3 py-1.5 rounded-lg text-xs font-medium border transition bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
       <i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1"></i>Chưa kiểm chứng <span id="cntUnverified" class="ml-1 font-bold">0</span>
+    </button>
+    <button data-chip="issues" onclick="toggleChip('issues')" class="chip px-3 py-1.5 rounded-lg text-xs font-medium border transition bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+      <i class="fa-solid fa-magnifying-glass-chart text-amber-500 mr-1"></i>Cần rà lại <span id="cntIssues" class="ml-1 font-bold">0</span>
     </button>
     <span id="filterSummary" class="text-xs text-slate-500 dark:text-slate-400 ml-1"></span>
   </div>
@@ -189,19 +194,74 @@ function safeUrl(u){
   u = String(u == null ? '' : u).trim();
   return /^https?:\/\//i.test(u) ? u : '';
 }
+function boDau(s){
+  return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
+
+/* Dựng ngày rồi ĐỌC NGƯỢC LẠI để kiểm chứng.
+   Không có bước này thì "9/25/2026" (Sheets tự đổi sang M/D/YYYY) lọt qua regex
+   và bị hiểu là ngày 9 tháng 25 -> JS tràn thành 09/01/2028, sai hoàn toàn mà không báo. */
+function mkDate(y, mo, d){
+  if (!(mo >= 1 && mo <= 12) || !(d >= 1 && d <= 31)) return null;
+  const dt = new Date(y, mo - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+  return dt;
+}
 function parseDate(s){
   s = String(s == null ? '' : s).trim();
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  if (m) return mkDate(+m[1], +m[2], +m[3]);
   m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  if (m) return mkDate(+m[3], +m[2], +m[1]);   /* DD/MM/YYYY kiểu Việt Nam */
   return null;
 }
+/* Chuẩn duy nhất của Sheet là YYYY-MM-DD. Mọi dạng khác đều đáng ngờ: với "9/5/2026"
+   không ai đoán được là 9/5 hay 5/9, nên phải gắn cờ cho người dùng tự đối chiếu. */
+function isIsoDate(s){ return /^\d{4}-\d{1,2}-\d{1,2}$/.test(String(s == null ? '' : s).trim()); }
 function today0(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
 function dayDiff(a, b){ return Math.round((b - a) / 86400000); }
 function fmtVN(s){ const d = parseDate(s); if (!d) return String(s || '—');
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
 function isVerified(doc){ return /newsdetail\.aspx\?NewsId=\d+/i.test(String(doc.link_goc || '')); }
+
+/* ================== SOI CHẤT LƯỢNG DÒNG DỮ LIỆU ==================
+   Prompt ràng buộc Gemini, nhưng prompt có thể bị nới lỏng mà không ai hay.
+   Đây là lớp phòng vệ phía app: mọi vi phạm đều phải hiện ra màn hình. */
+
+/* 6 lĩnh vực đóng theo prompt — giá trị lạ nghĩa là Gemini đã tự tạo nhãn mới */
+const LINH_VUC_HOP_LE = ['Môi trường', 'Lao động & An toàn', 'Đầu tư & Vận hành KCN',
+  'Tiêu chuẩn & Chất lượng', 'Đất đai & Xây dựng', 'Hành chính & Pháp lý doanh nghiệp'];
+
+function laChuaXacDinh(s){ return boDau(s).trim().toLowerCase() === 'chua xac dinh'; }
+
+function docIssues(doc){
+  const out = [];
+  if (!isVerified(doc)) out.push('Thiếu link bài gốc để đối chiếu');
+
+  const sh = String(doc.so_hieu || '').trim();
+  if (!sh) out.push('Trống số hiệu văn bản');
+  else if (laChuaXacDinh(sh)) out.push('Số hiệu còn ghi "CHƯA XÁC ĐỊNH"');
+
+  if (/^chua kiem chung/.test(boDau(doc.pdca_check).trim().toLowerCase()))
+    out.push('Gemini tự đánh dấu CHƯA KIỂM CHỨNG');
+
+  [['ngay_hieu_luc', 'hiệu lực'], ['ngay_cap_nhat', 'cập nhật']].forEach(([k, nhan]) => {
+    const raw = String(doc[k] || '').trim();
+    if (!raw) out.push('Trống ngày ' + nhan);
+    /* "CHƯA XÁC ĐỊNH" là giá trị hợp lệ theo prompt, không phải lỗi định dạng —
+       vẫn phải nêu ra vì dòng đó không bao giờ vào được cảnh báo sắp hết hạn. */
+    else if (laChuaXacDinh(raw)) out.push('Chưa có ngày ' + nhan + ' nên không tính được hạn');
+    else if (!parseDate(raw)) out.push('Ngày ' + nhan + ' không đọc được: "' + raw + '"');
+    else if (!isIsoDate(raw)) out.push('Ngày ' + nhan + ' sai định dạng ("' + raw + '") — phải là YYYY-MM-DD, dễ bị đọc lộn ngày/tháng');
+  });
+
+  const lv = String(doc.linh_vuc || '').trim();
+  if (!lv) out.push('Trống lĩnh vực');
+  else if (!LINH_VUC_HOP_LE.includes(lv)) out.push('Lĩnh vực ngoài 6 giá trị chuẩn: "' + lv + '"');
+
+  return out;
+}
 
 /* Trạng thái suy ra từ NGÀY, không phụ thuộc cờ thủ công trong Sheet */
 function docState(doc){
@@ -258,15 +318,57 @@ function rowsToDocs(rows){
   return out;
 }
 
-/* Chống trùng: ưu tiên ID, sau đó số hiệu văn bản */
+/* Chuẩn hóa số hiệu trước khi so — CÙNG luật với prompt Gemini (Bước 2).
+   Bỏ dấu, viết HOA, rồi CẮT LẤY ĐÚNG CỤM SỐ HIỆU: bắt đầu từ chữ số đầu tiên.
+   Cách này bóc sạch cả tiền tố ("Nghị định số", "Thông tư số") lẫn phần đuôi
+   ("ngày 31/7/2026"), nên ba cách viết sau quy về một:
+     "Nghị định số 110/2026/NĐ-CP" = "110/2026/NĐ-CP" = "110/2026/nđ-cp"
+   TT-BTNMT và TT-BNNMT là cùng một cơ quan: Bộ Tài nguyên Môi trường đã sáp nhập
+   vào Bộ Nông nghiệp và Môi trường, nên hai cách viết là MỘT thông tư.
+   Dấu chấm PHẢI nằm trong nhóm ký tự: 66.17/2026/NQ-CP và 66.19/2026/NQ-CP là
+   HAI nghị quyết khác nhau, cắt ở dấu chấm sẽ gộp nhầm cả hai thành "66". */
+function normSoHieu(s){
+  const m = boDau(s).toUpperCase().match(/\d+[0-9A-Z\/\-\.]*/);
+  if (!m) return '';
+  return m[0].replace(/[\/\-\.]+$/, '').replace(/TT-BTNMT/g, 'TT-BNNMT');
+}
+
+/* Gặp trùng thì giữ dòng ĐẦY ĐỦ HƠN: có link gốc thắng tuyệt đối,
+   sau đó mới xét độ dài nội dung PDCA (bài chi tiết luôn dài hơn bài tổng hợp). */
+function docScore(d){
+  const len = [d.tom_tat, d.pdca_plan, d.pdca_do, d.pdca_check, d.pdca_act].join(' ').trim().length;
+  return (isVerified(d) ? 1000000 : 0) + len;
+}
+
+let dupRemoved = [];   /* nhật ký các dòng bị ẩn, để báo cáo ở bảng rà soát */
+
 function dedupe(list){
-  const seenId = new Set(), seenSh = new Set(), out = [];
+  const out = [], idxId = new Map(), idxSh = new Map();
+  dupRemoved = [];
   for (const d of list){
-    const sh = String(d.so_hieu || '').trim().toLowerCase();
-    if (seenId.has(d.id)) continue;
-    if (sh && sh !== 'chưa xác định' && seenSh.has(sh)) continue;
-    seenId.add(d.id); if (sh) seenSh.add(sh);
+    const id = String(d.id || '').trim().toUpperCase();
+    /* "CHƯA XÁC ĐỊNH" KHÔNG BAO GIỜ tính là trùng — nếu tính thì mọi văn bản
+       chưa rõ số hiệu sẽ chặn lẫn nhau và biến mất khỏi app vĩnh viễn. */
+    const sh = laChuaXacDinh(d.so_hieu) ? '' : normSoHieu(d.so_hieu);
+
+    let pos = -1, lyDo = '';
+    if (id && idxId.has(id)) { pos = idxId.get(id); lyDo = 'trùng ID ' + id; }
+    else if (sh && idxSh.has(sh)) { pos = idxSh.get(sh); lyDo = 'trùng số hiệu ' + sh; }
+
+    if (pos >= 0){
+      const cu = out[pos];
+      const giuMoi = docScore(d) > docScore(cu);
+      dupRemoved.push({ giu: giuMoi ? d : cu, bo: giuMoi ? cu : d, lyDo });
+      if (giuMoi) out[pos] = d;
+      if (id) idxId.set(id, pos);
+      if (sh) idxSh.set(sh, pos);
+      continue;
+    }
+
     out.push(d);
+    const p = out.length - 1;
+    if (id) idxId.set(id, p);
+    if (sh) idxSh.set(sh, p);
   }
   return out;
 }
@@ -284,8 +386,31 @@ function sortDocs(list){
 let allDocs = [], visibleCount = PAGE_SIZE, lastRendered = [];
 let bookmarks = [];
 try { bookmarks = JSON.parse(localStorage.getItem('dnieza_bookmarks') || '[]'); } catch(e) { bookmarks = []; }
-const chips = { upcoming:false, bookmark:false, unverified:false };
+const chips = { upcoming:false, bookmark:false, unverified:false, issues:false };
 let syncState = { mode:'loading', detail:'' };
+
+/* ===================== BỘ NHỚ ĐỆM CỤC BỘ =====================
+   Trước đây mất mạng là rơi thẳng về SEED_DATA cứng trong file, nên máy nào
+   chặn Google là VĨNH VIỄN thấy dữ liệu ngày SEED_DATE. Giờ mỗi lần đồng bộ
+   thành công đều lưu lại, mất mạng thì dùng bản lưu gần nhất. */
+const CACHE_KEY = 'dnieza_cache_v1';
+let cacheTs = null;
+
+function readCache(){
+  try {
+    const o = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (!o || !Array.isArray(o.docs) || !o.docs.length || !o.ts) return null;
+    return o;
+  } catch(e){ return null; }
+}
+function writeCache(docs){
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), docs })); } catch(e){}
+}
+function fmtTs(ts){
+  const d = new Date(ts);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear()
+    + ' lúc ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
 
 /* ============================ GIAO DIỆN ============================ */
 function toggleTheme(){
@@ -306,7 +431,8 @@ function setSync(mode, detail){
   const txt = document.getElementById('syncBadgeText');
   const styles = {
     live:   ['bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300', 'bg-emerald-500', 'Đồng bộ trực tiếp'],
-    cache:  ['bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300', 'bg-rose-500', 'Không đồng bộ được'],
+    cache:  ['bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300', 'bg-amber-500', 'Bản lưu ngoại tuyến'],
+    seed:   ['bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300', 'bg-rose-500', 'Không đồng bộ được'],
     loading:['bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300', 'bg-slate-400', 'Đang tải…']
   };
   const [cls, dot, label] = styles[mode] || styles.loading;
@@ -318,16 +444,21 @@ function renderAlerts(){
   const zone = document.getElementById('alertZone');
   const out = [];
 
-  if (syncState.mode === 'cache'){
+  if (syncState.mode === 'cache' || syncState.mode === 'seed'){
     const isFile = location.protocol === 'file:';
+    const laSeed = syncState.mode === 'seed';
+    const mau = laSeed ? 'rose' : 'amber';
+    const nguon = laSeed
+      ? `<strong>dữ liệu nhúng sẵn trong file, ngày ${esc(SEED_DATE)}</strong> — máy này chưa từng đồng bộ được lần nào`
+      : `<strong>bản lưu ngoại tuyến từ lần đồng bộ gần nhất (${esc(fmtTs(cacheTs))})</strong>`;
     out.push(`
-      <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50">
+      <div class="p-4 rounded-xl bg-${mau}-50 dark:bg-${mau}-950/30 border border-${mau}-200 dark:border-${mau}-900/50">
         <div class="flex items-start gap-3">
-          <i class="fa-solid fa-circle-exclamation text-rose-500 mt-0.5"></i>
-          <div class="text-xs text-rose-900 dark:text-rose-200 leading-relaxed">
+          <i class="fa-solid fa-circle-exclamation text-${mau}-500 mt-0.5"></i>
+          <div class="text-xs text-${mau}-900 dark:text-${mau}-200 leading-relaxed">
             <strong class="block text-sm mb-1">Không lấy được dữ liệu mới từ Google Sheet</strong>
-            Đang hiển thị <strong>dữ liệu nhúng sẵn ngày ${esc(SEED_DATE)}</strong> — đây KHÔNG phải bản mới nhất.
-            ${isFile ? `<div class="mt-2 p-2.5 rounded-lg bg-rose-100/70 dark:bg-rose-900/30">
+            Đang hiển thị ${nguon}. Đây KHÔNG phải bản mới nhất — văn bản ban hành sau thời điểm đó sẽ không có ở đây.
+            ${isFile ? `<div class="mt-2 p-2.5 rounded-lg bg-${mau}-100/70 dark:bg-${mau}-900/30">
               <strong>Nguyên nhân:</strong> bạn đang mở file trực tiếp từ ổ đĩa (<code>file://</code>). Trình duyệt chặn kết nối tới Google Sheet ở chế độ này.
               <br><strong>Cách xử lý:</strong> mở trang qua một địa chỉ web (http/https) — ví dụ GitHub Pages, Google Sites — thay vì nhấp đúp vào file HTML.
             </div>` : `<div class="mt-1.5">Chi tiết: ${esc(syncState.detail || 'không rõ')}. Kiểm tra kết nối mạng và quyền chia sẻ của Google Sheet.</div>`}
@@ -389,6 +520,54 @@ function renderDeadlines(){
     </div>`;
 }
 
+/* Bảng rà soát: mọi dòng sai chuẩn và mọi dòng bị ẩn vì trùng đều phải lộ ra đây,
+   nếu không thì lỗi dữ liệu sẽ nằm im trong Sheet mà không ai biết. */
+function renderQuality(){
+  const panel = document.getElementById('qualityPanel');
+  const bad = allDocs.map(d => ({ d, v: docIssues(d) })).filter(x => x.v.length);
+
+  if (!bad.length && !dupRemoved.length){
+    panel.classList.add('hidden'); panel.innerHTML = ''; return;
+  }
+  panel.classList.remove('hidden');
+
+  const GIOI_HAN = 15;
+  const rows = bad.slice(0, GIOI_HAN).map(({ d, v }) => `
+    <button onclick="openModal('${esc(d.id)}')" class="text-left w-full p-3 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900/50 hover:shadow-sm transition">
+      <div class="text-[11px] font-mono text-slate-500 mb-0.5">${esc(d.id)}</div>
+      <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 clamp2 leading-snug mb-1.5">${esc(d.tieu_de)}</div>
+      <div class="flex flex-wrap gap-1">${v.map(t =>
+        `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200">${esc(t)}</span>`
+      ).join('')}</div>
+    </button>`).join('');
+
+  const conLai = bad.length > GIOI_HAN
+    ? `<p class="text-[11px] text-amber-800 dark:text-amber-300 mt-2.5">…và ${bad.length - GIOI_HAN} dòng khác. Bấm chip <strong>“Cần rà lại”</strong> ở dưới để xem hết.</p>`
+    : '';
+
+  const dupBlock = dupRemoved.length ? `
+    <div class="mt-3 pt-3 border-t border-amber-200 dark:border-amber-900/50">
+      <p class="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
+        <i class="fa-solid fa-layer-group mr-1"></i>Đã ẩn <strong>${dupRemoved.length} dòng trùng</strong> khỏi danh sách
+        (giữ lại dòng đầy đủ hơn): ${dupRemoved.slice(0, 8).map(x => esc(x.lyDo)).join('; ')}${dupRemoved.length > 8 ? '; …' : ''}.
+        Nên xoá các dòng thừa này trong Sheet để tránh sai lệch về sau.
+      </p>
+    </div>` : '';
+
+  panel.innerHTML = `
+    <div class="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>Dữ liệu cần rà lại — ${bad.length} dòng
+      </h3>
+      <p class="text-[11px] text-amber-800/80 dark:text-amber-300/80 mb-3">
+        Các dòng dưới đây vi phạm quy tắc trong prompt cập nhật. Mở Sheet đối chiếu với bài gốc rồi sửa tay.
+      </p>
+      ${bad.length ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">${rows}</div>` : ''}
+      ${conLai}
+      ${dupBlock}
+    </div>`;
+}
+
 function buildCategoryOptions(){
   const sel = document.getElementById('categoryFilter');
   const cur = sel.value || 'ALL';
@@ -409,6 +588,7 @@ function filterDocs(){
     if (chips.upcoming && !s.upcoming) return false;
     if (chips.bookmark && !bookmarks.includes(d.id)) return false;
     if (chips.unverified && s.verified) return false;
+    if (chips.issues && !docIssues(d).length) return false;
     if (cat !== 'ALL' && String(d.linh_vuc).trim() !== cat) return false;
     if (!q) return true;
     return [d.tieu_de, d.so_hieu, d.co_quan, d.linh_vuc, d.tom_tat, d.pdca_plan, d.pdca_do, d.pdca_check, d.pdca_act]
@@ -490,6 +670,7 @@ function render(){
   document.getElementById('cntUpcoming').textContent = up.length;
   document.getElementById('cntBookmark').textContent = bookmarks.length;
   document.getElementById('cntUnverified').textContent = allDocs.filter(d => !docState(d).verified).length;
+  document.getElementById('cntIssues').textContent = allDocs.filter(d => docIssues(d).length).length;
 
   const newest = allDocs.map(d => parseDate(d.ngay_cap_nhat)).filter(Boolean).sort((a,b) => b-a)[0];
   document.getElementById('statData').textContent = newest
@@ -585,6 +766,7 @@ function applyDocs(list){
   buildCategoryOptions();
   renderAlerts();
   renderDeadlines();
+  renderQuality();
   rerender();
 }
 
@@ -597,11 +779,15 @@ async function fetchSheetData(){
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const docs = rowsToDocs(parseCSV(await res.text()));
     if (!docs.length) throw new Error('Sheet không có dòng dữ liệu hợp lệ');
+    writeCache(docs);
+    cacheTs = Date.now();
     setSync('live');
     applyDocs(docs);
   } catch (err){
-    setSync('cache', err && err.message ? err.message : String(err));
-    applyDocs(SEED_DATA);
+    const chiTiet = err && err.message ? err.message : String(err);
+    const c = readCache();
+    if (c){ cacheTs = c.ts; setSync('cache', chiTiet); applyDocs(c.docs); }
+    else   { cacheTs = null; setSync('seed', chiTiet); applyDocs(SEED_DATA); }
   } finally {
     icon.classList.remove('fa-spin');
   }
@@ -611,7 +797,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sheetLink').href = SHEET_EDIT;
   document.getElementById('footerSource').href = SOURCE_URL;
   setSync('loading');
-  applyDocs(SEED_DATA);
+  /* Vẽ ngay bản lưu gần nhất để không phải nhìn dữ liệu tháng cũ trong lúc chờ mạng */
+  const c0 = readCache();
+  if (c0){ cacheTs = c0.ts; applyDocs(c0.docs); } else applyDocs(SEED_DATA);
   fetchSheetData();
 });
 </script>
