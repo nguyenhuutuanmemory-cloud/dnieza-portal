@@ -1,6 +1,14 @@
-# Sao lưu thủ công. Các .bak tạo trước 29/08/2026 vẫn được theo dõi để giữ
-# lịch sử; từ nay git đã thay vai trò sao lưu nên .bak mới không cần vào repo.
+# Repo này chỉ chứa mã nguồn và tài liệu. Mọi thứ khác nằm trên máy, không đẩy lên.
+
+# Sao lưu thủ công — git đã thay vai trò này, không cần .bak trong repo nữa.
 *.bak
+
+# Dữ liệu: bản xuất từ Google Sheet, file nhập liệu, ảnh chụp dữ liệu.
+# Nguồn thật là Google Sheet, app đọc trực tiếp lúc chạy nên repo không cần bản sao.
+*.csv
+
+# Script tiện ích chạy tay để soi Sheet, không thuộc app
+kiem_tra_sheet.js
 
 # File ảo của Google Drive — không có nội dung thật để git đọc
 *.gsheet
