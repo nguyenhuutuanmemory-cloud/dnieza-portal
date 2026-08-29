@@ -163,6 +163,9 @@ người thực hiện phải kiểm chứng lại toàn bộ kết quả do AI 
 > gốc, mà cả 91 dòng trong Sheet đều có link hợp lệ, nên nó luôn hiển thị **0** trong khi
 > thực tế có 30 dòng do chính Gemini tự gắn cờ "CHƯA KIỂM CHỨNG". Suốt thời gian qua, việc
 > tự kiểm hàng tuần không phát hiện được gì.
+>
+> Chip đó **đã gỡ khỏi WebApp** để khỏi ai dùng nhầm lại. Thiếu link bài gốc nay là một
+> trong các lỗi mà nhãn "Cần rà lại" bắt, nên không mất thông tin.
 
 ### Bước 1 — Kiểm tra dữ liệu đang xem có mới không
 
