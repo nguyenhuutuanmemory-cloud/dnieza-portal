@@ -1,7 +1,8 @@
 # Prompt cho Gemini — cập nhật DNIEZA_News_Database lúc 8h00 hằng ngày
 
 Dán toàn bộ phần trong khung dưới đây làm chỉ dẫn cho tác vụ tự động.
-WebApp đã có lớp phòng vệ riêng, nhưng prompt càng chặt thì càng ít dòng bị gắn cờ "Chưa kiểm chứng".
+WebApp đã có lớp phòng vệ riêng, nhưng prompt càng chặt thì càng ít dòng rơi vào bảng
+"Dữ liệu cần rà lại" (xem mục [Cách tự kiểm mỗi tuần](#cách-tự-kiểm-mỗi-tuần) ở cuối file).
 
 ---
 
@@ -135,5 +136,48 @@ người thực hiện phải kiểm chứng lại toàn bộ kết quả do AI 
 
 ## Cách tự kiểm mỗi tuần
 
-Mở WebApp, bấm chip **"Chưa kiểm chứng"**. Mọi dòng hiện ra ở đó đều thiếu link bài gốc —
-đối chiếu lại rồi sửa trong Sheet. Nếu con số này tăng dần theo tuần, prompt đang bị Gemini nới lỏng.
+> **Đã đổi ngày 29/08/2026.** Hướng dẫn cũ bảo dùng chip "Chưa kiểm chứng" làm thước đo
+> duy nhất. Thước đo đó bị hỏng thầm lặng: chip này chỉ xét MỘT điều kiện là thiếu link bài
+> gốc, mà cả 91 dòng trong Sheet đều có link hợp lệ, nên nó luôn hiển thị **0** trong khi
+> thực tế có 30 dòng do chính Gemini tự gắn cờ "CHƯA KIỂM CHỨNG". Suốt thời gian qua, việc
+> tự kiểm hàng tuần không phát hiện được gì.
+
+### Bước 1 — Kiểm tra dữ liệu đang xem có mới không
+
+Nhìn huy hiệu cạnh tên app trên đầu trang:
+
+| Huy hiệu | Nghĩa | Phải làm gì |
+|---|---|---|
+| 🟢 Đồng bộ trực tiếp | Đang đọc thẳng từ Google Sheet | Tự kiểm được |
+| 🟡 Bản lưu ngoại tuyến | Mất mạng, đang xem bản lưu kèm ngày giờ | **Dừng tự kiểm**, xử lý mạng trước |
+| 🔴 Không đồng bộ được | Máy này chưa từng đồng bộ, đang xem dữ liệu nhúng trong file | **Dừng tự kiểm** |
+
+Tự kiểm trên bản lưu cũ là rà soát nhầm dữ liệu — số liệu sẽ vô nghĩa.
+
+### Bước 2 — Bấm chip "Cần rà lại"
+
+Đây mới là thước đo thật. Chip này gom mọi dòng vi phạm quy tắc của prompt, và bảng
+**"Dữ liệu cần rà lại"** ngay đầu trang liệt kê rõ từng dòng sai ở chỗ nào:
+
+| Cảnh báo | Nghĩa | Cách xử lý |
+|---|---|---|
+| Gemini tự đánh dấu CHƯA KIỂM CHỨNG | Ô `PDCA_Check` mở đầu bằng "CHƯA KIỂM CHỨNG:" — Gemini thừa nhận không chắc | Mở bài gốc đối chiếu, sửa lại nội dung PDCA rồi xoá tiền tố đó |
+| Số hiệu còn ghi "CHƯA XÁC ĐỊNH" | Bài viết không nêu số hiệu | Tra trên Cổng thông tin VBQPPL, điền số hiệu thật |
+| Chưa có ngày hiệu lực nên không tính được hạn | Ô ngày trống hoặc ghi "CHƯA XÁC ĐỊNH" | Dòng này **không bao giờ vào được cảnh báo sắp hết hạn** — phải bổ sung ngày, nếu không sẽ bỏ lỡ mốc tuân thủ |
+| Ngày ... sai định dạng | Google Sheets đã tự đổi ô ngày sang kiểu Ngày tháng | Định dạng lại cột B và F thành "Văn bản thuần túy", nhập lại YYYY-MM-DD |
+| Ngày ... không đọc được | Ô ngày hỏng hẳn | Nhập lại đúng YYYY-MM-DD |
+| Lĩnh vực ngoài 6 giá trị chuẩn | Gemini tự tạo nhãn mới | Sửa về đúng 1 trong 6 giá trị ở quy tắc 5 |
+| Thiếu link bài gốc | Không có link `newsdetail` để đối chiếu | Bổ sung link, hoặc xoá dòng nếu không truy được nguồn |
+
+Cuối bảng còn báo số **dòng trùng đã bị ẩn** kèm lý do. WebApp chỉ ẩn khi hiển thị, không
+sửa Sheet — nên vào Sheet xoá tay các dòng thừa đó.
+
+### Bước 3 — So với mốc nền
+
+Chốt ngày **29/08/2026**: 91 dòng, trong đó **31 dòng cần rà lại**
+(30 dòng Gemini tự gắn cờ chưa kiểm chứng, 25 dòng thiếu ngày hiệu lực, 8 dòng thiếu số hiệu —
+một dòng có thể dính nhiều lỗi). Không có dòng nào sai lĩnh vực, sai định dạng ngày, hay bị trùng.
+
+Mỗi tuần ghi lại con số này. **Tỷ lệ "cần rà lại" tăng dần nghĩa là prompt đang bị Gemini nới lỏng** —
+lúc đó siết lại quy tắc 7 (cấm bịa) và quy tắc 6 (định dạng ô). Con số phải giảm dần khi bạn
+sửa tay, chứ không được đứng yên: đứng yên nghĩa là chưa ai thực sự rà.
