@@ -1,0 +1,17 @@
+# Sao lưu thủ công. Các .bak tạo trước 29/08/2026 vẫn được theo dõi để giữ
+# lịch sử; từ nay git đã thay vai trò sao lưu nên .bak mới không cần vào repo.
+*.bak
+
+# File ảo của Google Drive — không có nội dung thật để git đọc
+*.gsheet
+*.gdoc
+*.gslides
+desktop.ini
+
+# Rác do build CSS (chỉ chạy trong thư mục tạm ngoài Drive, phòng khi lỡ tay)
+node_modules/
+package-lock.json
+out.css
+input.css
+safelist.html
+tailwind.config.js
