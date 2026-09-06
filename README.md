@@ -26,6 +26,8 @@ Sheet, app sẽ hiện cảnh báo đỏ và rơi về dữ liệu cũ.
 
 - **Thẻ PDCA** cho từng văn bản: Plan / Do / Check / Act, viết cho người vận hành nhà máy
 - **Sắp có hiệu lực trong 30 ngày** — panel riêng đầu trang, dưới 7 ngày thì chuyển đỏ
+- **Biết ngay văn bản nào mới**: mỗi thẻ hiện `Đăng: …· Hiệu lực: …`, nhãn `MỚI` cho văn bản
+  đăng trong 30 ngày (`FRESH_DAYS`), nhãn `MỚI NHẤT` cho đúng một văn bản đứng đầu
 - **Nhãn `CẦN RÀ LẠI`** trên văn bản có dữ liệu đáng ngờ (xem dưới)
 - Lọc theo 6 lĩnh vực, tìm kiếm toàn văn kể cả trong nội dung PDCA
 - Đánh dấu văn bản cần theo dõi (lưu trong trình duyệt, riêng từng máy)
@@ -57,6 +59,26 @@ Câu chữ cảnh báo cũng chỉ nêu điều app thực sự biết. App đ�
 DNIEZA (bị CORS chặn), nên nó **không thể** biết Gemini còn chạy hay không — chỉ biết Sheet
 lâu rồi chưa có dòng mới. Vì vậy cảnh báo nêu cả hai khả năng và kèm link mở thẳng chuyên
 mục nguồn để người đọc tự xác định là trường hợp nào.
+
+## Biết văn bản nào mới nhất
+
+Danh sách luôn sắp theo **ngày đăng, mới trước** — có ghi rõ ngay trên thanh lọc để khỏi
+phải đoán. Trước ngày 06/09/2026 app sắp đúng như vậy nhưng **giấu ngày đăng đi**, chỉ hiện
+ngày hiệu lực, nên nhìn vào tưởng danh sách lộn xộn: sắp theo một ngày vô hình mà lại hiển
+thị một ngày khác.
+
+| Dấu hiệu | Ý nghĩa |
+|---|---|
+| `Đăng: …` trên mỗi thẻ | Ngày cổng DNIEZA đăng bài — chính là căn cứ sắp xếp |
+| Nhãn `MỚI NHẤT` | Đúng **một** văn bản, mới nhất trong cả kho, bất kể bao nhiêu ngày |
+| Nhãn `MỚI` | Đăng trong vòng 30 ngày (`FRESH_DAYS`) |
+
+`FRESH_DAYS` để 30 ngày cùng lý do với `STALE_DAYS`: nguồn đăng thưa. Đặt 7 ngày như bản cũ
+thì gần như quanh năm không thẻ nào có nhãn — ngày 06/09/2026 đo trên dữ liệu thật: ngưỡng
+7 ngày cho **0/91** văn bản, ngưỡng 30 ngày cho **15/91**.
+
+Nhãn `MỚI NHẤT` thay chỗ `MỚI` trên chính văn bản đó chứ không đứng cạnh. Nó bám theo thứ
+hạng nên luôn tồn tại, kể cả khi nguồn nghỉ đăng lâu hơn 30 ngày và không còn nhãn `MỚI` nào.
 
 ## Lớp phòng vệ dữ liệu
 
