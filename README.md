@@ -30,6 +30,8 @@ Sheet, app sẽ hiện cảnh báo đỏ và rơi về dữ liệu cũ.
 - Lọc theo 6 lĩnh vực, tìm kiếm toàn văn kể cả trong nội dung PDCA
 - Đánh dấu văn bản cần theo dõi (lưu trong trình duyệt, riêng từng máy)
 - Chế độ tối, in / lưu PDF danh sách đang lọc
+- **Lối vào Tạp chí An toàn, Vệ sinh lao động** — nút trên header (từ khổ `md` trở lên) và
+  một thẻ trong nội dung (thấy được ở mọi khổ màn hình, kể cả điện thoại)
 
 Trạng thái hiệu lực do app **tự tính từ ngày tháng**, không tin cột `Trang_Thai` trong
 Sheet — cột đó chỉ để tham khảo.
@@ -72,6 +74,25 @@ App cũng chống trùng theo đúng luật của prompt: bỏ tiền tố "Ngh�
 Danh sách dòng bị ẩn được ghi ra console của trình duyệt (F12), không hiện trên giao diện.
 
 Quy trình tự kiểm hàng tuần: xem mục cuối [PROMPT_GEMINI_8H_SANG.md](PROMPT_GEMINI_8H_SANG.md).
+
+## Tạp chí ATVSLĐ — chỉ dẫn link, không lưu file
+
+App **không lưu và không phục vụ** bất kỳ file PDF tạp chí nào. Hai lối vào đều trỏ thẳng
+sang [trang tạp chí in của Tạp chí Lao động và Công đoàn](https://laodongdoanthe.vn/tap-chi-in/an-toan-ve-sinh-lao-dong),
+nơi có đủ các số đã phát hành và người đọc xem ngay trên đó.
+
+Đây là lựa chọn có chủ đích, không phải làm tạm:
+
+- **Bản quyền** — tạp chí là ấn phẩm có bản quyền; dẫn link về nguồn thì không phát sinh
+  vấn đề gì, còn tự đăng lại bản PDF đầy đủ thì có.
+- **Dung lượng** — mỗi số nặng 57–84 MB. GitHub Pages giới hạn mềm 1 GB dung lượng site và
+  100 GB băng thông/tháng, tức khoảng 1.500 lượt mở là chạm trần. Thêm ~65 MB mỗi tháng thì
+  chưa đầy một năm là hết chỗ.
+- **Không gỡ lại được** — git giữ lịch sử vĩnh viễn. Commit nhầm một file PDF thì xoá ở
+  commit sau cũng không giảm được dung lượng repo.
+
+Vì vậy `.gitignore` chặn sẵn `*.pdf` và thư mục `Tap_chi_ATVSLĐ/`. Bản PDF gốc cứ để trên
+máy / Google Drive, đừng đưa vào repo.
 
 ## Sửa giao diện — đọc trước kẻo mất công
 

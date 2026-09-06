@@ -82,6 +82,34 @@
   .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:9999px; }
   .dark .custom-scrollbar::-webkit-scrollbar-thumb { background:#334155; }
   .clamp2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+  /* Lối vào Tạp chí ATVSLĐ — chỉ dẫn link sang trang gốc laodongdoanthe.vn,
+     app không lưu và không phục vụ file PDF nào.
+     Viết bằng CSS thuần có chủ đích: Tailwind trong file này là bản build tĩnh,
+     lớp Tailwind mới thêm vào sẽ không có tác dụng mà cũng không báo lỗi gì. */
+  .mag-cta { display:flex; align-items:center; gap:.875rem; flex-wrap:wrap;
+    padding:.875rem 1.125rem; border-radius:.75rem; text-decoration:none;
+    background:#fff; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,.05);
+    transition:background .15s ease, border-color .15s ease; }
+  .mag-cta:hover { background:#f0fdf4; border-color:#6ee7b7; }
+  .dark .mag-cta { background:#0f172a; border-color:#1e293b; }
+  .dark .mag-cta:hover { background:rgba(6,78,59,.35); border-color:#065f46; }
+  .mag-cta__icon { flex:none; width:2.5rem; height:2.5rem; border-radius:.625rem;
+    display:flex; align-items:center; justify-content:center;
+    background:#ecfdf5; color:#059669; font-size:1rem; }
+  .dark .mag-cta__icon { background:rgba(6,78,59,.5); color:#34d399; }
+  /* basis nhỏ để trên màn hình điện thoại icon và tiêu đề vẫn nằm cùng một hàng,
+     chỉ nút bấm mới rơi xuống dòng dưới */
+  .mag-cta__text { min-width:0; flex:1 1 10rem; }
+  .mag-cta__title { display:block; font-size:.875rem; font-weight:700; color:#0f172a; }
+  .dark .mag-cta__title { color:#f1f5f9; }
+  .mag-cta__sub { display:block; font-size:.75rem; margin-top:.125rem; color:#64748b; }
+  .dark .mag-cta__sub { color:#94a3b8; }
+  .mag-cta__go { flex:none; margin-left:auto; display:inline-flex; align-items:center; gap:.5rem;
+    padding:.5rem .875rem; border-radius:.5rem; font-size:.75rem; font-weight:600;
+    background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+  .dark .mag-cta__go { background:rgba(6,78,59,.5); color:#6ee7b7; border-color:rgba(6,95,70,.6); }
+
   @media print {
     .no-print { display: none !important; }
     body { background: #fff !important; color: #000 !important; }
@@ -118,6 +146,9 @@
         </button>
         <a id="sheetLink" href="#" target="_blank" rel="noopener noreferrer" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition">
           <i class="fa-solid fa-table-cells"></i><span>Sheet</span>
+        </a>
+        <a href="https://laodongdoanthe.vn/tap-chi-in/an-toan-ve-sinh-lao-dong" target="_blank" rel="noopener noreferrer" title="Các số Tạp chí An toàn, Vệ sinh lao động trên trang của Tạp chí Lao động và Công đoàn" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition">
+          <i class="fa-solid fa-layer-group"></i><span>Tạp chí</span>
         </a>
         <button onclick="toggleTheme()" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition" title="Sáng / Tối">
           <i class="fa-solid fa-moon text-sm dark:hidden"></i><i class="fa-solid fa-sun text-sm hidden dark:inline text-amber-400"></i>
@@ -161,6 +192,15 @@
   </div>
 
   <div id="deadlinePanel" class="hidden mb-6"></div>
+
+  <a href="https://laodongdoanthe.vn/tap-chi-in/an-toan-ve-sinh-lao-dong" target="_blank" rel="noopener noreferrer" class="mag-cta no-print mb-6">
+    <span class="mag-cta__icon"><i class="fa-solid fa-layer-group"></i></span>
+    <span class="mag-cta__text">
+      <span class="mag-cta__title">Tạp chí An toàn, Vệ sinh lao động</span>
+      <span class="mag-cta__sub">Đọc các số đã phát hành trên trang của Tạp chí Lao động và Công đoàn</span>
+    </span>
+    <span class="mag-cta__go">Mở trang tạp chí <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+  </a>
 
   <div class="mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 no-print">
     <div class="md:col-span-6 relative">

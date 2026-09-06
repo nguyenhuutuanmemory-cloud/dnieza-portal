@@ -23,3 +23,9 @@ out.css
 input.css
 safelist.html
 tailwind.config.js
+
+# Tạp chí ATVSLĐ: file PDF nằm trên Google Drive, không đưa vào repo.
+# Mỗi số 57-84 MB, git giữ lịch sử vĩnh viễn nên lỡ commit là không gỡ lại được.
+# Chỉ ảnh bìa trong assets/tap-chi/ được đưa lên.
+*.pdf
+Tap_chi_ATVSLĐ/
