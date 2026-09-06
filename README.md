@@ -46,8 +46,17 @@ Huy hiệu cạnh tên app cho biết đang xem dữ liệu nào. Nhìn nó trư
 | 🟡 Bản lưu ngoại tuyến | localStorage | Mất mạng; hiện kèm thời điểm lưu gần nhất |
 | 🔴 Không đồng bộ được | Dữ liệu nhúng trong file | Máy này chưa từng đồng bộ thành công lần nào |
 
-App còn cảnh báo khi văn bản mới nhất trong Sheet đã quá 3 ngày — dấu hiệu tiến trình
-cập nhật 8h sáng có thể đã dừng.
+App còn cảnh báo khi văn bản mới nhất trong Sheet đã quá **25 ngày** (`STALE_DAYS`).
+
+Con số này chọn theo nhịp đăng bài thật của cổng DNIEZA, không phải đặt bừa: 10 bài trong
+khoảng 17/06–24/08/2026 cách nhau 1, 2, 2, 4, 5, 5, 11, 17 và 21 ngày. Ngưỡng cũ là 3 ngày,
+nổi cảnh báo trong 6 trên 9 khoảng nghỉ đó — kêu nhầm nhiều hơn kêu đúng, riết rồi không ai
+buồn đọc. 25 ngày vượt khoảng nghỉ dài nhất từng thấy mà vẫn đủ sớm để bắt được sự cố thật.
+
+Câu chữ cảnh báo cũng chỉ nêu điều app thực sự biết. App đọc Sheet chứ không đọc được cổng
+DNIEZA (bị CORS chặn), nên nó **không thể** biết Gemini còn chạy hay không — chỉ biết Sheet
+lâu rồi chưa có dòng mới. Vì vậy cảnh báo nêu cả hai khả năng và kèm link mở thẳng chuyên
+mục nguồn để người đọc tự xác định là trường hợp nào.
 
 ## Lớp phòng vệ dữ liệu
 
